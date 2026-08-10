@@ -65,12 +65,18 @@ def _fila_a_venta(row: dict[str, Any]) -> dict[str, Any]:
 
 
 def _payload_con_columna(venta: dict[str, Any], col_cantidad: str) -> dict[str, Any]:
+    qty = float(venta["kilos"])
+    # 'sacos' en tablas viejas es INTEGER → mandar entero (evita error "4.0")
+    # 'kilos' puede ser NUMERIC → decimal libre
+    if col_cantidad == "sacos":
+        cantidad: int | float = int(round(qty))
+    else:
+        cantidad = qty
     return {
         "semana": venta["semana"],
         "dia": venta["dia"],
         "cliente": venta["cliente"],
-        # El valor siempre es kilos; el nombre de columna puede ser kilos o sacos
-        col_cantidad: float(venta["kilos"]),
+        col_cantidad: cantidad,
         "precio": float(venta["precio"]),
         "estado": venta["estado"],
     }
