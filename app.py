@@ -213,23 +213,114 @@ if seccion == "Cuaderno Semanal":
                     )
                     st.success(f"Anotado: {cliente} · {nombre_dia}")
 
-            filtrados = [
-                v
-                for v in st.session_state.base_ventas
+            # Índices reales en base_ventas (para editar/borrar sin equivocarse)
+            indices_dia = [
+                i
+                for i, v in enumerate(st.session_state.base_ventas)
                 if v["semana"] == semana_act and v["dia"] == nombre_dia
             ]
 
-            if filtrados:
-                df_dia = pd.DataFrame(filtrados)
-                df_dia["monto"] = df_dia["sacos"] * df_dia["precio"]
+            if indices_dia:
+                filas_vista = []
+                for i in indices_dia:
+                    v = st.session_state.base_ventas[i]
+                    filas_vista.append(
+                        {
+                            "cliente": v["cliente"],
+                            "sacos": v["sacos"],
+                            "precio": v["precio"],
+                            "monto": monto_venta(v),
+                            "estado": v["estado"],
+                        }
+                    )
+                df_dia = pd.DataFrame(filas_vista)
                 st.dataframe(
-                    df_dia[["cliente", "sacos", "precio", "monto", "estado"]],
+                    df_dia,
                     use_container_width=True,
                     hide_index=True,
                 )
                 c1, c2 = st.columns(2)
                 c1.metric("Sacos hoy", f"{int(df_dia['sacos'].sum())}")
                 c2.metric("Total hoy", f"S/ {df_dia['monto'].sum():.2f}")
+
+                st.divider()
+                st.subheader("Corregir o borrar (si anotó mal)")
+                etiquetas = {
+                    f"#{n + 1} · {st.session_state.base_ventas[i]['cliente']} · "
+                    f"{st.session_state.base_ventas[i]['sacos']} sacos · "
+                    f"S/ {monto_venta(st.session_state.base_ventas[i]):.2f} · "
+                    f"{st.session_state.base_ventas[i]['estado']}": i
+                    for n, i in enumerate(indices_dia)
+                }
+                elegir_lbl = st.selectbox(
+                    "Despacho a corregir",
+                    list(etiquetas.keys()),
+                    key=f"sel_edit_{nombre_dia}_{semana_act}",
+                )
+                idx_edit = etiquetas[elegir_lbl]
+                actual = st.session_state.base_ventas[idx_edit]
+
+                with st.form(f"form_edit_{nombre_dia}_{idx_edit}"):
+                    st.caption("Cambie lo que esté mal y guarde, o bórrelo si no debió ir.")
+                    e_cliente = st.selectbox(
+                        "Pollería",
+                        LISTA_POLLERIAS,
+                        index=(
+                            LISTA_POLLERIAS.index(actual["cliente"])
+                            if actual["cliente"] in LISTA_POLLERIAS
+                            else 0
+                        ),
+                    )
+                    e_sacos = st.number_input(
+                        "Sacos",
+                        min_value=1,
+                        value=int(actual["sacos"]),
+                        step=1,
+                    )
+                    e_precio = st.number_input(
+                        "Precio por saco (S/)",
+                        min_value=0.0,
+                        value=float(actual["precio"]),
+                        step=0.5,
+                    )
+                    e_estado = st.selectbox(
+                        "Estado del pago",
+                        ESTADOS_PAGO,
+                        index=(
+                            ESTADOS_PAGO.index(actual["estado"])
+                            if actual["estado"] in ESTADOS_PAGO
+                            else 0
+                        ),
+                    )
+                    st.write(f"Monto corregido: **S/ {e_sacos * e_precio:.2f}**")
+                    col_g, col_b = st.columns(2)
+                    with col_g:
+                        btn_guardar = st.form_submit_button(
+                            "Guardar corrección",
+                            type="primary",
+                            use_container_width=True,
+                        )
+                    with col_b:
+                        btn_borrar = st.form_submit_button(
+                            "Borrar despacho",
+                            use_container_width=True,
+                        )
+
+                    if btn_guardar:
+                        st.session_state.base_ventas[idx_edit] = {
+                            "semana": semana_act,
+                            "dia": nombre_dia,
+                            "cliente": e_cliente,
+                            "sacos": int(e_sacos),
+                            "precio": float(e_precio),
+                            "estado": e_estado,
+                        }
+                        st.success("Despacho corregido.")
+                        st.rerun()
+                    if btn_borrar:
+                        st.session_state.base_ventas.pop(idx_edit)
+                        st.success("Despacho borrado.")
+                        st.rerun()
             else:
                 st.info("Hoja vacía. Aún no hay despachos este día.")
 
