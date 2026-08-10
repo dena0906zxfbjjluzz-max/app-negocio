@@ -3,6 +3,13 @@ import pandas as pd
 from datetime import date
 
 from reportes import generar_excel_cuaderno, generar_pdf_resumen
+from db import (
+    supabase_configurado,
+    listar_despachos,
+    insertar_despacho,
+    actualizar_despacho,
+    borrar_despacho,
+)
 
 st.set_page_config(
     page_title="Control Papas - Pollerías",
@@ -16,10 +23,7 @@ CLAVE_DEMO = "papas2026"
 
 
 def cargar_credenciales() -> tuple[str, str, bool]:
-    """
-    Lee usuario/clave desde st.secrets['credenciales'].
-    Retorna (usuario, clave, desde_demo).
-    """
+    """Lee usuario/clave desde st.secrets['credenciales']."""
     try:
         creds = st.secrets.get("credenciales")
         if creds is not None:
@@ -36,20 +40,7 @@ def cargar_credenciales() -> tuple[str, str, bool]:
     return USUARIO_DEMO, CLAVE_DEMO, True
 
 
-# --- Supabase: se activará cuando pongas secretos (fase 2) ---
-SUPABASE_LISTO = False
-try:
-    url = st.secrets.get("SUPABASE_URL")
-    key = st.secrets.get("SUPABASE_KEY")
-    if not url and "credenciales" in st.secrets:
-        url = st.secrets["credenciales"].get("SUPABASE_URL")
-        key = st.secrets["credenciales"].get("SUPABASE_KEY")
-    if url and key:
-        # from supabase import create_client
-        # supabase = create_client(url, key)
-        SUPABASE_LISTO = True
-except Exception:
-    pass
+USAR_NUBE = supabase_configurado()
 
 LISTA_POLLERIAS = [
     "Pollería El Corralito",
@@ -66,7 +57,6 @@ TABS_DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 
 
 def semana_label(fecha: date | None = None) -> str:
-    """Etiqueta de semana ISO del año (ej. Semana 33)."""
     f = fecha or date.today()
     return f"Semana {f.isocalendar().week}"
 
@@ -81,11 +71,84 @@ def semanas_disponibles() -> list[str]:
     out = list(dict.fromkeys(candidatas))
     if actual not in out:
         out.insert(0, actual)
+    # semanas que ya existen en datos
+    for v in st.session_state.get("base_ventas", []):
+        s = v.get("semana")
+        if s and s not in out:
+            out.append(s)
     return out
 
 
 def monto_venta(v: dict) -> float:
     return float(v.get("sacos", 0)) * float(v.get("precio", 0))
+
+
+def datos_demo() -> list[dict]:
+    s = semana_label()
+    return [
+        {
+            "id": None,
+            "semana": s,
+            "dia": "Lunes",
+            "cliente": "Pollería El Corralito",
+            "sacos": 12,
+            "precio": 45.0,
+            "estado": "Pagado en efectivo",
+        },
+        {
+            "id": None,
+            "semana": s,
+            "dia": "Lunes",
+            "cliente": "Pollería Norky's",
+            "sacos": 20,
+            "precio": 43.5,
+            "estado": "Fiado / Debe",
+        },
+        {
+            "id": None,
+            "semana": s,
+            "dia": "Martes",
+            "cliente": "Pollería Rokys",
+            "sacos": 15,
+            "precio": 44.0,
+            "estado": "Transferencia",
+        },
+    ]
+
+
+def cargar_datos_iniciales() -> list[dict]:
+    if USAR_NUBE:
+        try:
+            return listar_despachos()
+        except Exception as e:
+            st.session_state["error_supabase"] = str(e)
+            return []
+    return datos_demo()
+
+
+def agregar_venta(venta: dict) -> None:
+    if USAR_NUBE:
+        guardada = insertar_despacho(venta)
+        st.session_state.base_ventas.append(guardada)
+    else:
+        venta = {**venta, "id": None}
+        st.session_state.base_ventas.append(venta)
+
+
+def corregir_venta(idx: int, venta: dict) -> None:
+    actual = st.session_state.base_ventas[idx]
+    if USAR_NUBE and actual.get("id") is not None:
+        guardada = actualizar_despacho(int(actual["id"]), venta)
+        st.session_state.base_ventas[idx] = guardada
+    else:
+        st.session_state.base_ventas[idx] = {**venta, "id": actual.get("id")}
+
+
+def eliminar_venta(idx: int) -> None:
+    actual = st.session_state.base_ventas[idx]
+    if USAR_NUBE and actual.get("id") is not None:
+        borrar_despacho(int(actual["id"]))
+    st.session_state.base_ventas.pop(idx)
 
 
 if "autenticado" not in st.session_state:
@@ -116,6 +179,9 @@ if not st.session_state.autenticado:
         if usuario_in.strip() == usuario_ok and clave_in == clave_ok:
             st.session_state.autenticado = True
             st.session_state.usuario_sesion = usuario_in.strip()
+            # Recargar datos de nube al entrar
+            if "base_ventas" in st.session_state:
+                del st.session_state["base_ventas"]
             st.success("Acceso concedido.")
             st.rerun()
         else:
@@ -125,45 +191,31 @@ if not st.session_state.autenticado:
 
 # ---------- APP (requiere login) ----------
 if "base_ventas" not in st.session_state:
-    s = semana_label()
-    st.session_state.base_ventas = [
-        {
-            "semana": s,
-            "dia": "Lunes",
-            "cliente": "Pollería El Corralito",
-            "sacos": 12,
-            "precio": 45.0,
-            "estado": "Pagado en efectivo",
-        },
-        {
-            "semana": s,
-            "dia": "Lunes",
-            "cliente": "Pollería Norky's",
-            "sacos": 20,
-            "precio": 43.5,
-            "estado": "Fiado / Debe",
-        },
-        {
-            "semana": s,
-            "dia": "Martes",
-            "cliente": "Pollería Rokys",
-            "sacos": 15,
-            "precio": 44.0,
-            "estado": "Transferencia",
-        },
-    ]
+    st.session_state.base_ventas = cargar_datos_iniciales()
 
 st.sidebar.title("Menú")
 st.sidebar.caption(f"Sesión: **{st.session_state.usuario_sesion or 'usuario'}**")
 if st.sidebar.button("Cerrar sesión", use_container_width=True):
     st.session_state.autenticado = False
     st.session_state.usuario_sesion = ""
+    if "base_ventas" in st.session_state:
+        del st.session_state["base_ventas"]
     st.rerun()
 
-if SUPABASE_LISTO:
-    st.sidebar.success("Supabase: secrets listos")
+if USAR_NUBE:
+    st.sidebar.success("Datos en la nube (Supabase)")
+    if st.sidebar.button("Recargar desde la nube", use_container_width=True):
+        try:
+            st.session_state.base_ventas = listar_despachos()
+            st.sidebar.success("Datos actualizados.")
+            st.rerun()
+        except Exception as e:
+            st.sidebar.error(f"Error: {e}")
 else:
-    st.sidebar.info("Supabase: sin conectar (ok por ahora)")
+    st.sidebar.warning("Sin nube: se pierden al cerrar")
+
+if st.session_state.get("error_supabase"):
+    st.sidebar.error(f"Supabase: {st.session_state['error_supabase']}")
 
 seccion = st.sidebar.radio(
     "Ir a",
@@ -171,7 +223,13 @@ seccion = st.sidebar.radio(
 )
 
 st.title("Control de Papas y Pollerías")
-st.caption("Del cuaderno a la nube · datos en memoria por ahora")
+if USAR_NUBE:
+    st.caption("Los despachos se guardan en Supabase (no se pierden al cerrar sesión).")
+else:
+    st.caption(
+        "Modo local (memoria). Para no perder datos: cree la tabla en Supabase "
+        "y ponga SUPABASE_URL / SUPABASE_KEY en secrets."
+    )
 
 # =====================================================================
 # 1) CUADERNO SEMANAL
@@ -201,19 +259,22 @@ if seccion == "Cuaderno Semanal":
                 st.write(f"Monto estimado: **S/ {sacos * precio:.2f}**")
                 guardar = st.form_submit_button("Guardar despacho")
                 if guardar:
-                    st.session_state.base_ventas.append(
-                        {
-                            "semana": semana_act,
-                            "dia": nombre_dia,
-                            "cliente": cliente,
-                            "sacos": int(sacos),
-                            "precio": float(precio),
-                            "estado": estado,
-                        }
-                    )
-                    st.success(f"Anotado: {cliente} · {nombre_dia}")
+                    try:
+                        agregar_venta(
+                            {
+                                "semana": semana_act,
+                                "dia": nombre_dia,
+                                "cliente": cliente,
+                                "sacos": int(sacos),
+                                "precio": float(precio),
+                                "estado": estado,
+                            }
+                        )
+                        st.success(f"Anotado: {cliente} · {nombre_dia}")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"No se pudo guardar: {e}")
 
-            # Índices reales en base_ventas (para editar/borrar sin equivocarse)
             indices_dia = [
                 i
                 for i, v in enumerate(st.session_state.base_ventas)
@@ -234,11 +295,7 @@ if seccion == "Cuaderno Semanal":
                         }
                     )
                 df_dia = pd.DataFrame(filas_vista)
-                st.dataframe(
-                    df_dia,
-                    use_container_width=True,
-                    hide_index=True,
-                )
+                st.dataframe(df_dia, use_container_width=True, hide_index=True)
                 c1, c2 = st.columns(2)
                 c1.metric("Sacos hoy", f"{int(df_dia['sacos'].sum())}")
                 c2.metric("Total hoy", f"S/ {df_dia['monto'].sum():.2f}")
@@ -307,20 +364,29 @@ if seccion == "Cuaderno Semanal":
                         )
 
                     if btn_guardar:
-                        st.session_state.base_ventas[idx_edit] = {
-                            "semana": semana_act,
-                            "dia": nombre_dia,
-                            "cliente": e_cliente,
-                            "sacos": int(e_sacos),
-                            "precio": float(e_precio),
-                            "estado": e_estado,
-                        }
-                        st.success("Despacho corregido.")
-                        st.rerun()
+                        try:
+                            corregir_venta(
+                                idx_edit,
+                                {
+                                    "semana": semana_act,
+                                    "dia": nombre_dia,
+                                    "cliente": e_cliente,
+                                    "sacos": int(e_sacos),
+                                    "precio": float(e_precio),
+                                    "estado": e_estado,
+                                },
+                            )
+                            st.success("Despacho corregido.")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"No se pudo corregir: {e}")
                     if btn_borrar:
-                        st.session_state.base_ventas.pop(idx_edit)
-                        st.success("Despacho borrado.")
-                        st.rerun()
+                        try:
+                            eliminar_venta(idx_edit)
+                            st.success("Despacho borrado.")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"No se pudo borrar: {e}")
             else:
                 st.info("Hoja vacía. Aún no hay despachos este día.")
 
@@ -446,6 +512,11 @@ elif seccion == "Cuentas por Cobrar":
         )
         if st.button("Registrar cobro"):
             idx = opciones[elegir]
-            st.session_state.base_ventas[idx]["estado"] = modo
-            st.success("Cobro registrado.")
-            st.rerun()
+            v = dict(st.session_state.base_ventas[idx])
+            v["estado"] = modo
+            try:
+                corregir_venta(idx, v)
+                st.success("Cobro registrado.")
+                st.rerun()
+            except Exception as e:
+                st.error(f"No se pudo registrar cobro: {e}")
