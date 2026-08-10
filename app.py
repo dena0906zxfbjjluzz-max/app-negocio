@@ -10,6 +10,32 @@ st.set_page_config(
     layout="centered",
 )
 
+# Demo local si aún no hay secrets (cámbialo en Streamlit Cloud)
+USUARIO_DEMO = "admin"
+CLAVE_DEMO = "papas2026"
+
+
+def cargar_credenciales() -> tuple[str, str, bool]:
+    """
+    Lee usuario/clave desde st.secrets['credenciales'].
+    Retorna (usuario, clave, desde_demo).
+    """
+    try:
+        creds = st.secrets.get("credenciales")
+        if creds is not None:
+            usuario = str(creds.get("usuario", "")).strip()
+            clave = str(creds.get("clave", "")).strip()
+            if usuario and clave:
+                return usuario, clave, False
+        usuario = str(st.secrets.get("usuario", "")).strip()
+        clave = str(st.secrets.get("clave", "")).strip()
+        if usuario and clave:
+            return usuario, clave, False
+    except Exception:
+        pass
+    return USUARIO_DEMO, CLAVE_DEMO, True
+
+
 # --- Supabase: se activará cuando pongas secretos (fase 2) ---
 SUPABASE_LISTO = False
 try:
@@ -47,13 +73,11 @@ def semana_label(fecha: date | None = None) -> str:
 
 def semanas_disponibles() -> list[str]:
     actual = semana_label()
-    # Semana actual, anterior y siguiente (ISO simple por número)
     n = date.today().isocalendar().week
     candidatas = []
     for w in (n - 1, n, n + 1):
         if 1 <= w <= 53:
             candidatas.append(f"Semana {w}")
-    # Asegurar orden y sin duplicados
     out = list(dict.fromkeys(candidatas))
     if actual not in out:
         out.insert(0, actual)
@@ -64,6 +88,42 @@ def monto_venta(v: dict) -> float:
     return float(v.get("sacos", 0)) * float(v.get("precio", 0))
 
 
+if "autenticado" not in st.session_state:
+    st.session_state.autenticado = False
+if "usuario_sesion" not in st.session_state:
+    st.session_state.usuario_sesion = ""
+
+# ---------- LOGIN ----------
+if not st.session_state.autenticado:
+    st.title("Control de Papas y Pollerías")
+    st.caption("Acceso restringido · introduzca su usuario y contraseña")
+    st.divider()
+
+    usuario_ok, clave_ok, es_demo = cargar_credenciales()
+    if es_demo:
+        st.info(
+            "Credenciales demo (sin secrets): "
+            f"**{USUARIO_DEMO}** / **{CLAVE_DEMO}**. "
+            "En Streamlit Cloud ponga las suyas en Settings → Secrets."
+        )
+
+    with st.form("login_form"):
+        usuario_in = st.text_input("Usuario")
+        clave_in = st.text_input("Contraseña", type="password")
+        entrar = st.form_submit_button("Ingresar", type="primary", use_container_width=True)
+
+    if entrar:
+        if usuario_in.strip() == usuario_ok and clave_in == clave_ok:
+            st.session_state.autenticado = True
+            st.session_state.usuario_sesion = usuario_in.strip()
+            st.success("Acceso concedido.")
+            st.rerun()
+        else:
+            st.error("Usuario o contraseña incorrectos.")
+
+    st.stop()
+
+# ---------- APP (requiere login) ----------
 if "base_ventas" not in st.session_state:
     s = semana_label()
     st.session_state.base_ventas = [
@@ -93,24 +153,36 @@ if "base_ventas" not in st.session_state:
         },
     ]
 
-st.title("Control de Papas y Pollerías")
-st.caption("Del cuaderno a la nube · datos en memoria por ahora")
+st.sidebar.title("Menú")
+st.sidebar.caption(f"Sesión: **{st.session_state.usuario_sesion or 'usuario'}**")
+if st.sidebar.button("Cerrar sesión", use_container_width=True):
+    st.session_state.autenticado = False
+    st.session_state.usuario_sesion = ""
+    st.rerun()
+
 if SUPABASE_LISTO:
     st.sidebar.success("Supabase: secrets listos")
 else:
     st.sidebar.info("Supabase: sin conectar (ok por ahora)")
 
 seccion = st.sidebar.radio(
-    "Menú",
+    "Ir a",
     ["Cuaderno Semanal", "Resumen Semanal", "Cuentas por Cobrar"],
 )
+
+st.title("Control de Papas y Pollerías")
+st.caption("Del cuaderno a la nube · datos en memoria por ahora")
 
 # =====================================================================
 # 1) CUADERNO SEMANAL
 # =====================================================================
 if seccion == "Cuaderno Semanal":
     st.header("Registro semanal")
-    semana_act = st.selectbox("Semana de trabajo", semanas_disponibles(), index=min(1, len(semanas_disponibles()) - 1))
+    semana_act = st.selectbox(
+        "Semana de trabajo",
+        semanas_disponibles(),
+        index=min(1, len(semanas_disponibles()) - 1),
+    )
     st.divider()
 
     hojas = st.tabs(TABS_DIAS)
@@ -122,7 +194,9 @@ if seccion == "Cuaderno Semanal":
             with st.form(f"form_{nombre_dia}", clear_on_submit=True):
                 cliente = st.selectbox("Pollería", LISTA_POLLERIAS)
                 sacos = st.number_input("Sacos", min_value=1, value=5, step=1)
-                precio = st.number_input("Precio por saco (S/)", min_value=0.0, value=45.0, step=0.5)
+                precio = st.number_input(
+                    "Precio por saco (S/)", min_value=0.0, value=45.0, step=0.5
+                )
                 estado = st.selectbox("Estado del pago", ESTADOS_PAGO)
                 st.write(f"Monto estimado: **S/ {sacos * precio:.2f}**")
                 guardar = st.form_submit_button("Guardar despacho")
@@ -263,17 +337,22 @@ elif seccion == "Cuentas por Cobrar":
                 }
             )
 
-        st.warning(f"{len(pendientes_idx)} entrega(s) pendiente(s) · total S/ {total_debe:.2f}")
+        st.warning(
+            f"{len(pendientes_idx)} entrega(s) pendiente(s) · total S/ {total_debe:.2f}"
+        )
         st.dataframe(pd.DataFrame(filas), use_container_width=True, hide_index=True)
 
         st.subheader("Marcar como cobrado")
         opciones = {
             f"[{i}] {st.session_state.base_ventas[i]['cliente']} · "
-            f"{st.session_state.base_ventas[i]['dia']} · S/ {monto_venta(st.session_state.base_ventas[i]):.2f}": i
+            f"{st.session_state.base_ventas[i]['dia']} · "
+            f"S/ {monto_venta(st.session_state.base_ventas[i]):.2f}": i
             for i in pendientes_idx
         }
         elegir = st.selectbox("Entrega", list(opciones.keys()))
-        modo = st.radio("Cobrado cómo", ["Pagado en efectivo", "Transferencia"], horizontal=True)
+        modo = st.radio(
+            "Cobrado cómo", ["Pagado en efectivo", "Transferencia"], horizontal=True
+        )
         if st.button("Registrar cobro"):
             idx = opciones[elegir]
             st.session_state.base_ventas[idx]["estado"] = modo
