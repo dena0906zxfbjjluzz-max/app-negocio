@@ -69,12 +69,10 @@ Esto es lo que usarás **todos los días**.
    | Campo | Qué poner |
    |-------|-----------|
    | **Pollería** | Elige el cliente de la lista |
-   | **Kilos** | Cuántos kilos entregaste |
-   | **Precio por kilo (S/)** | Precio en soles |
-   | **Estado del pago** | Efectivo / Transferencia / Fiado |
+   | **Kilos (kg)** | Escriba la cantidad que quiera (ej. 12, 37.5, 200). No hay saco automático. |
+   | **Precio por kilo (S/)** | Precio en soles por kilo |
 
-6. Revisa el **Monto estimado** (kilos × precio).  
-7. Toca **Guardar despacho**.  
+6. Toque **Guardar despacho**.
 
 Abajo verás la **tabla del día** con:
 

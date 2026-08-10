@@ -251,29 +251,48 @@ if seccion == "Cuaderno Semanal":
 
             with st.form(f"form_{nombre_dia}", clear_on_submit=True):
                 cliente = st.selectbox("Pollería", LISTA_POLLERIAS)
-                kilos = st.number_input("Kilos", min_value=0.5, value=50.0, step=0.5)
-                precio = st.number_input(
-                    "Precio por kilo (S/)", min_value=0.0, value=2.60, step=0.1
+                kilos_txt = st.text_input(
+                    "Kilos (kg)",
+                    placeholder="Escriba la cantidad que quiera, ej: 12 · 37.5 · 200",
+                    help="Libre: los kilos reales del despacho (sin conversión a saco).",
+                )
+                precio_txt = st.text_input(
+                    "Precio por kilo (S/)",
+                    value="2.60",
+                    placeholder="Ej: 2.60",
                 )
                 estado = st.selectbox("Estado del pago", ESTADOS_PAGO)
-                st.write(f"Monto estimado: **S/ {kilos * precio:.2f}**")
                 guardar = st.form_submit_button("Guardar despacho")
                 if guardar:
                     try:
-                        agregar_venta(
-                            {
-                                "semana": semana_act,
-                                "dia": nombre_dia,
-                                "cliente": cliente,
-                                "kilos": float(kilos),
-                                "precio": float(precio),
-                                "estado": estado,
-                            }
-                        )
-                        st.success(f"Anotado: {cliente} · {nombre_dia}")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"No se pudo guardar: {e}")
+                        kilos = float((kilos_txt or "").replace(",", ".").strip())
+                        precio = float((precio_txt or "").replace(",", ".").strip())
+                    except ValueError:
+                        st.error("Escriba números válidos en kilos y precio (ej. 25.5 y 2.60).")
+                        kilos = precio = None
+                    if kilos is not None and precio is not None:
+                        if kilos <= 0:
+                            st.error("Los kilos deben ser mayores que 0.")
+                        elif precio < 0:
+                            st.error("El precio no puede ser negativo.")
+                        else:
+                            try:
+                                agregar_venta(
+                                    {
+                                        "semana": semana_act,
+                                        "dia": nombre_dia,
+                                        "cliente": cliente,
+                                        "kilos": float(kilos),
+                                        "precio": float(precio),
+                                        "estado": estado,
+                                    }
+                                )
+                                st.success(
+                                    f"Anotado: {cliente} · {kilos:g} kg · S/ {kilos * precio:.2f}"
+                                )
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"No se pudo guardar: {e}")
 
             indices_dia = [
                 i
@@ -328,17 +347,16 @@ if seccion == "Cuaderno Semanal":
                             else 0
                         ),
                     )
-                    e_kilos = st.number_input(
-                        "Kilos",
-                        min_value=0.5,
-                        value=float(actual["kilos"]),
-                        step=0.5,
+                    e_kilos_txt = st.text_input(
+                        "Kilos (kg)",
+                        value=str(actual["kilos"]).rstrip("0").rstrip(".")
+                        if isinstance(actual["kilos"], float)
+                        else str(actual["kilos"]),
+                        help="Escriba la cantidad de kilos que quiera.",
                     )
-                    e_precio = st.number_input(
+                    e_precio_txt = st.text_input(
                         "Precio por kilo (S/)",
-                        min_value=0.0,
-                        value=float(actual["precio"]),
-                        step=0.1,
+                        value=str(actual["precio"]),
                     )
                     e_estado = st.selectbox(
                         "Estado del pago",
@@ -349,7 +367,6 @@ if seccion == "Cuaderno Semanal":
                             else 0
                         ),
                     )
-                    st.write(f"Monto corregido: **S/ {e_kilos * e_precio:.2f}**")
                     col_g, col_b = st.columns(2)
                     with col_g:
                         btn_guardar = st.form_submit_button(
@@ -365,21 +382,31 @@ if seccion == "Cuaderno Semanal":
 
                     if btn_guardar:
                         try:
-                            corregir_venta(
-                                idx_edit,
-                                {
-                                    "semana": semana_act,
-                                    "dia": nombre_dia,
-                                    "cliente": e_cliente,
-                                    "kilos": float(e_kilos),
-                                    "precio": float(e_precio),
-                                    "estado": e_estado,
-                                },
-                            )
-                            st.success("Despacho corregido.")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"No se pudo corregir: {e}")
+                            e_kilos = float((e_kilos_txt or "").replace(",", ".").strip())
+                            e_precio = float((e_precio_txt or "").replace(",", ".").strip())
+                        except ValueError:
+                            st.error("Kilos y precio deben ser números válidos.")
+                            e_kilos = e_precio = None
+                        if e_kilos is not None and e_precio is not None:
+                            if e_kilos <= 0:
+                                st.error("Los kilos deben ser mayores que 0.")
+                            else:
+                                try:
+                                    corregir_venta(
+                                        idx_edit,
+                                        {
+                                            "semana": semana_act,
+                                            "dia": nombre_dia,
+                                            "cliente": e_cliente,
+                                            "kilos": float(e_kilos),
+                                            "precio": float(e_precio),
+                                            "estado": e_estado,
+                                        },
+                                    )
+                                    st.success("Despacho corregido.")
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"No se pudo corregir: {e}")
                     if btn_borrar:
                         try:
                             eliminar_venta(idx_edit)
