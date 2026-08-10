@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from datetime import date
 
+from reportes import generar_excel_cuaderno, generar_pdf_resumen
+
 st.set_page_config(
     page_title="Control Papas - Pollerías",
     page_icon="🥔",
@@ -193,19 +195,43 @@ elif seccion == "Resumen Semanal":
             hide_index=True,
         )
 
-        st.subheader("Descargar reporte")
-        csv = (
-            df_sem[["dia", "cliente", "sacos", "precio", "monto", "estado"]]
-            .to_csv(index=False)
-            .encode("utf-8-sig")
-        )
-        nombre_archivo = f"reporte_{semana_act.replace(' ', '_')}.csv"
-        st.download_button(
-            "Descargar CSV (abre en Excel)",
-            data=csv,
-            file_name=nombre_archivo,
-            mime="text/csv",
-        )
+        st.subheader("Descargar reportes")
+        st.caption("Excel estilo cuaderno (varias hojas) y PDF de resumen ejecutivo.")
+        slug = semana_act.replace(" ", "_")
+
+        try:
+            excel_buf = generar_excel_cuaderno(
+                ventas_sem,
+                semana_act,
+                lista_clientes=LISTA_POLLERIAS,
+            )
+            pdf_buf = generar_pdf_resumen(
+                ventas_sem,
+                semana_act,
+                lista_clientes=LISTA_POLLERIAS,
+            )
+        except Exception as e:
+            st.error(f"No se pudo generar el reporte: {e}")
+            excel_buf = pdf_buf = None
+
+        if excel_buf and pdf_buf:
+            c1, c2 = st.columns(2)
+            with c1:
+                st.download_button(
+                    "Descargar Excel del cuaderno",
+                    data=excel_buf.getvalue(),
+                    file_name=f"Cuaderno_{slug}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True,
+                )
+            with c2:
+                st.download_button(
+                    "Descargar PDF resumen",
+                    data=pdf_buf.getvalue(),
+                    file_name=f"Resumen_{slug}.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                )
 
 # =====================================================================
 # 3) CUENTAS POR COBRAR
