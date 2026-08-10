@@ -54,7 +54,7 @@ def _fila_a_venta(row: dict[str, Any]) -> dict[str, Any]:
         "semana": row.get("semana") or "",
         "dia": row.get("dia") or "",
         "cliente": row.get("cliente") or "",
-        "sacos": int(row.get("sacos") or 0),
+        "kilos": float(row.get("kilos") if row.get("kilos") is not None else row.get("sacos") or 0),
         "precio": float(row.get("precio") or 0),
         "estado": row.get("estado") or "Pagado en efectivo",
     }
@@ -80,7 +80,7 @@ def insertar_despacho(venta: dict[str, Any]) -> dict[str, Any]:
         "semana": venta["semana"],
         "dia": venta["dia"],
         "cliente": venta["cliente"],
-        "sacos": int(venta["sacos"]),
+        "kilos": float(venta["kilos"]),
         "precio": float(venta["precio"]),
         "estado": venta["estado"],
     }
@@ -98,7 +98,7 @@ def actualizar_despacho(id_: int, venta: dict[str, Any]) -> dict[str, Any]:
         "semana": venta["semana"],
         "dia": venta["dia"],
         "cliente": venta["cliente"],
-        "sacos": int(venta["sacos"]),
+        "kilos": float(venta["kilos"]),
         "precio": float(venta["precio"]),
         "estado": venta["estado"],
     }

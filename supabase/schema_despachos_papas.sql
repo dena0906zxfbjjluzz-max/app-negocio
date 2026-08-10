@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.despachos_papas (
     semana          TEXT NOT NULL,
     dia             TEXT NOT NULL,
     cliente         TEXT NOT NULL,
-    sacos           INTEGER NOT NULL CHECK (sacos > 0),
+    kilos           NUMERIC(12, 2) NOT NULL CHECK (kilos > 0),
     precio          NUMERIC(12, 2) NOT NULL DEFAULT 0,
     estado          TEXT NOT NULL DEFAULT 'Pagado en efectivo',
     creado_en       TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),

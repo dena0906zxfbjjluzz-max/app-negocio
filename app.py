@@ -80,7 +80,7 @@ def semanas_disponibles() -> list[str]:
 
 
 def monto_venta(v: dict) -> float:
-    return float(v.get("sacos", 0)) * float(v.get("precio", 0))
+    return float(v.get("kilos", 0)) * float(v.get("precio", 0))
 
 
 def datos_demo() -> list[dict]:
@@ -91,8 +91,8 @@ def datos_demo() -> list[dict]:
             "semana": s,
             "dia": "Lunes",
             "cliente": "Pollería El Corralito",
-            "sacos": 12,
-            "precio": 45.0,
+            "kilos": 50.0,
+            "precio": 2.60,
             "estado": "Pagado en efectivo",
         },
         {
@@ -100,8 +100,8 @@ def datos_demo() -> list[dict]:
             "semana": s,
             "dia": "Lunes",
             "cliente": "Pollería Norky's",
-            "sacos": 20,
-            "precio": 43.5,
+            "kilos": 80.0,
+            "precio": 2.50,
             "estado": "Fiado / Debe",
         },
         {
@@ -109,8 +109,8 @@ def datos_demo() -> list[dict]:
             "semana": s,
             "dia": "Martes",
             "cliente": "Pollería Rokys",
-            "sacos": 15,
-            "precio": 44.0,
+            "kilos": 60.0,
+            "precio": 2.55,
             "estado": "Transferencia",
         },
     ]
@@ -251,12 +251,12 @@ if seccion == "Cuaderno Semanal":
 
             with st.form(f"form_{nombre_dia}", clear_on_submit=True):
                 cliente = st.selectbox("Pollería", LISTA_POLLERIAS)
-                sacos = st.number_input("Sacos", min_value=1, value=5, step=1)
+                kilos = st.number_input("Kilos", min_value=0.5, value=50.0, step=0.5)
                 precio = st.number_input(
-                    "Precio por saco (S/)", min_value=0.0, value=45.0, step=0.5
+                    "Precio por kilo (S/)", min_value=0.0, value=2.60, step=0.1
                 )
                 estado = st.selectbox("Estado del pago", ESTADOS_PAGO)
-                st.write(f"Monto estimado: **S/ {sacos * precio:.2f}**")
+                st.write(f"Monto estimado: **S/ {kilos * precio:.2f}**")
                 guardar = st.form_submit_button("Guardar despacho")
                 if guardar:
                     try:
@@ -265,7 +265,7 @@ if seccion == "Cuaderno Semanal":
                                 "semana": semana_act,
                                 "dia": nombre_dia,
                                 "cliente": cliente,
-                                "sacos": int(sacos),
+                                "kilos": float(kilos),
                                 "precio": float(precio),
                                 "estado": estado,
                             }
@@ -288,7 +288,7 @@ if seccion == "Cuaderno Semanal":
                     filas_vista.append(
                         {
                             "cliente": v["cliente"],
-                            "sacos": v["sacos"],
+                            "kilos": v["kilos"],
                             "precio": v["precio"],
                             "monto": monto_venta(v),
                             "estado": v["estado"],
@@ -297,14 +297,14 @@ if seccion == "Cuaderno Semanal":
                 df_dia = pd.DataFrame(filas_vista)
                 st.dataframe(df_dia, use_container_width=True, hide_index=True)
                 c1, c2 = st.columns(2)
-                c1.metric("Sacos hoy", f"{int(df_dia['sacos'].sum())}")
+                c1.metric("Kilos hoy", f"{df_dia['kilos'].sum():.1f}")
                 c2.metric("Total hoy", f"S/ {df_dia['monto'].sum():.2f}")
 
                 st.divider()
                 st.subheader("Corregir o borrar (si anotó mal)")
                 etiquetas = {
                     f"#{n + 1} · {st.session_state.base_ventas[i]['cliente']} · "
-                    f"{st.session_state.base_ventas[i]['sacos']} sacos · "
+                    f"{st.session_state.base_ventas[i]['kilos']} kg · "
                     f"S/ {monto_venta(st.session_state.base_ventas[i]):.2f} · "
                     f"{st.session_state.base_ventas[i]['estado']}": i
                     for n, i in enumerate(indices_dia)
@@ -328,17 +328,17 @@ if seccion == "Cuaderno Semanal":
                             else 0
                         ),
                     )
-                    e_sacos = st.number_input(
-                        "Sacos",
-                        min_value=1,
-                        value=int(actual["sacos"]),
-                        step=1,
+                    e_kilos = st.number_input(
+                        "Kilos",
+                        min_value=0.5,
+                        value=float(actual["kilos"]),
+                        step=0.5,
                     )
                     e_precio = st.number_input(
-                        "Precio por saco (S/)",
+                        "Precio por kilo (S/)",
                         min_value=0.0,
                         value=float(actual["precio"]),
-                        step=0.5,
+                        step=0.1,
                     )
                     e_estado = st.selectbox(
                         "Estado del pago",
@@ -349,7 +349,7 @@ if seccion == "Cuaderno Semanal":
                             else 0
                         ),
                     )
-                    st.write(f"Monto corregido: **S/ {e_sacos * e_precio:.2f}**")
+                    st.write(f"Monto corregido: **S/ {e_kilos * e_precio:.2f}**")
                     col_g, col_b = st.columns(2)
                     with col_g:
                         btn_guardar = st.form_submit_button(
@@ -371,7 +371,7 @@ if seccion == "Cuaderno Semanal":
                                     "semana": semana_act,
                                     "dia": nombre_dia,
                                     "cliente": e_cliente,
-                                    "sacos": int(e_sacos),
+                                    "kilos": float(e_kilos),
                                     "precio": float(e_precio),
                                     "estado": e_estado,
                                 },
@@ -402,7 +402,7 @@ elif seccion == "Resumen Semanal":
         st.info("Aún no hay datos en esta semana.")
     else:
         df_sem = pd.DataFrame(ventas_sem)
-        df_sem["monto"] = df_sem["sacos"] * df_sem["precio"]
+        df_sem["monto"] = df_sem["kilos"] * df_sem["precio"]
 
         st.subheader("Clientes sin pedido esta semana")
         con_pedido = set(df_sem["cliente"].unique())
@@ -417,11 +417,11 @@ elif seccion == "Resumen Semanal":
         st.divider()
         st.subheader("Totales")
         m1, m2 = st.columns(2)
-        m1.metric("Sacos de la semana", f"{int(df_sem['sacos'].sum())}")
+        m1.metric("Kilos de la semana", f"{df_sem['kilos'].sum():.1f}")
         m2.metric("Facturación", f"S/ {df_sem['monto'].sum():.2f}")
 
         st.dataframe(
-            df_sem[["dia", "cliente", "sacos", "precio", "monto", "estado"]],
+            df_sem[["dia", "cliente", "kilos", "precio", "monto", "estado"]],
             use_container_width=True,
             hide_index=True,
         )
@@ -489,7 +489,7 @@ elif seccion == "Cuentas por Cobrar":
                     "semana": v["semana"],
                     "dia": v["dia"],
                     "cliente": v["cliente"],
-                    "sacos": v["sacos"],
+                    "kilos": v["kilos"],
                     "monto": m,
                 }
             )

@@ -80,19 +80,19 @@ def _fill_estado(estado: str) -> PatternFill | None:
 def ventas_a_dataframe(ventas: list[dict]) -> pd.DataFrame:
     if not ventas:
         return pd.DataFrame(
-            columns=["Día", "Cliente", "Sacos", "Precio S/", "Monto S/", "Estado"]
+            columns=["Día", "Cliente", "Kilos", "Precio S/", "Monto S/", "Estado"]
         )
     rows = []
     for v in ventas:
-        sacos = int(v.get("sacos", 0))
+        kilos = float(v.get("kilos", v.get("sacos", 0)))
         precio = float(v.get("precio", 0))
         rows.append(
             {
                 "Día": v.get("dia", ""),
                 "Cliente": v.get("cliente", ""),
-                "Sacos": sacos,
+                "Kilos": kilos,
                 "Precio S/": round(precio, 2),
-                "Monto S/": round(sacos * precio, 2),
+                "Monto S/": round(kilos * precio, 2),
                 "Estado": v.get("estado", ""),
             }
         )
@@ -155,7 +155,7 @@ def _hoja_tabla(
 
     # Fila de totales si hay montos
     last = 2 + len(df)
-    if "Sacos" in headers or "Monto S/" in headers:
+    if "Kilos" in headers or "Monto S/" in headers:
         last += 1
         ws.cell(row=last, column=1, value="TOTAL")
         for c in range(1, n_cols + 1):
@@ -163,9 +163,9 @@ def _hoja_tabla(
             cell.font = Font(name="Calibri", bold=True, size=11, color=BLANCO)
             cell.fill = PatternFill("solid", fgColor=VERDE)
             cell.border = _borde()
-        if "Sacos" in headers:
-            ci = headers.index("Sacos") + 1
-            ws.cell(row=last, column=ci, value=int(df["Sacos"].sum()))
+        if "Kilos" in headers:
+            ci = headers.index("Kilos") + 1
+            ws.cell(row=last, column=ci, value=round(float(df["Kilos"].sum()), 2))
         if "Monto S/" in headers:
             ci = headers.index("Monto S/") + 1
             ws.cell(row=last, column=ci, value=round(float(df["Monto S/"].sum()), 2))
@@ -188,7 +188,7 @@ def _hoja_portada(
         ("Fecha de emisión", datetime.now().strftime("%Y-%m-%d %H:%M")),
         ("Semana", semana),
         ("Total despachos", str(len(df))),
-        ("Total sacos", str(int(df["Sacos"].sum()) if not df.empty else 0)),
+        ("Total kilos", str(round(float(df["Kilos"].sum()), 2) if not df.empty else 0)),
         (
             "Facturación S/",
             f"{float(df['Monto S/'].sum()):.2f}" if not df.empty and "Monto S/" in df.columns else "0.00",
@@ -311,7 +311,7 @@ def generar_pdf_resumen(
     con_pedido = set(df["Cliente"].unique()) if not df.empty else set()
     faltantes = [c for c in lista_clientes if c not in con_pedido]
 
-    total_sacos = int(df["Sacos"].sum()) if not df.empty else 0
+    total_kilos = float(df["Kilos"].sum()) if not df.empty else 0.0
     total_monto = float(df["Monto S/"].sum()) if not df.empty else 0.0
     n_despachos = len(df)
     if not df.empty:
@@ -359,7 +359,7 @@ def generar_pdf_resumen(
         ["Indicador de control", "Valor registrado"],
         ["Semana de trabajo", semana],
         ["Total de despachos", str(n_despachos)],
-        ["Total sacos despachados", str(total_sacos)],
+        ["Total kilos despachados", f"{total_kilos:.2f}"],
         ["Facturación total (S/)", f"{total_monto:.2f}"],
         ["Entregas fiadas / por cobrar", str(n_fiados)],
         ["Monto por cobrar (S/)", f"{monto_fiado:.2f}"],
@@ -409,21 +409,21 @@ def generar_pdf_resumen(
     if df.empty:
         story.append(Paragraph("Sin despachos registrados.", styles["Normal"]))
     else:
-        head = ["Día", "Cliente", "Sacos", "Monto S/", "Estado"]
+        head = ["Día", "Cliente", "Kilos", "Monto S/", "Estado"]
         data = [head]
         for _, row in df.iterrows():
             data.append(
                 [
                     str(row["Día"]),
                     str(row["Cliente"])[:28],
-                    str(int(row["Sacos"])),
+                    f"{float(row['Kilos']):.1f}",
                     f"{float(row['Monto S/']):.2f}",
                     str(row["Estado"])[:18],
                 ]
             )
         # totales
         data.append(
-            ["TOTAL", "", str(total_sacos), f"{total_monto:.2f}", ""]
+            ["TOTAL", "", f"{total_kilos:.1f}", f"{total_monto:.2f}", ""]
         )
         det = Table(data, colWidths=[70, 160, 50, 70, 100])
         det.setStyle(

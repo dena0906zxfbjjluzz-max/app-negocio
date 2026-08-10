@@ -9,7 +9,7 @@ Guía sencilla para usar la app en el celular o en la computadora.
 
 Es un **cuaderno digital** de la venta de papas a pollerías. Sirve para:
 
-1. Anotar **cuántos sacos** salieron cada día y a qué pollería  
+1. Anotar **cuántos kilos** salieron cada día y a qué pollería  
 2. Saber si pagaron **en efectivo**, por **transferencia** o si **deben (fiado)**  
 3. Ver al final de la semana **cuánto se facturó** y a **quién le falta** pedir  
 4. Ver **quién debe plata**  
@@ -69,29 +69,29 @@ Esto es lo que usarás **todos los días**.
    | Campo | Qué poner |
    |-------|-----------|
    | **Pollería** | Elige el cliente de la lista |
-   | **Sacos** | Cuántos sacos entregaste |
-   | **Precio por saco (S/)** | Precio en soles |
+   | **Kilos** | Cuántos kilos entregaste |
+   | **Precio por kilo (S/)** | Precio en soles |
    | **Estado del pago** | Efectivo / Transferencia / Fiado |
 
-6. Revisa el **Monto estimado** (sacos × precio).  
+6. Revisa el **Monto estimado** (kilos × precio).  
 7. Toca **Guardar despacho**.  
 
 Abajo verás la **tabla del día** con:
 
 - Cliente  
-- Sacos  
+- Kilos  
 - Precio  
 - Monto  
 - Estado  
 
-Y los totales: **Sacos hoy** y **Total hoy (S/)**.
+Y los totales: **Kilos hoy** y **Total hoy (S/)**.
 
 ### Si anotaste mal (corregir o borrar)
 
 Más abajo de la tabla, en **Corregir o borrar**:
 
 1. Elige el despacho incorrecto en la lista.  
-2. Cambia lo que esté mal (cliente, sacos, precio o estado).  
+2. Cambia lo que esté mal (cliente, kilos, precio o estado).  
 3. Toca **Guardar corrección**  
    **o**  
 4. Toca **Borrar despacho** si no debió existir.
@@ -120,7 +120,7 @@ Pollerías de la lista a las que **aún no les despachaste** esa semana.
 (Así no se te olvida alguna del reparto habitual.)
 
 ### Totales  
-- Sacos de la semana  
+- Kilos de la semana  
 - Facturación en soles  
 
 ### Tabla completa  
@@ -141,7 +141,7 @@ En el celular: el archivo se descarga y lo puedes abrir con Excel, Google Drive 
 
 1. Entra a **Cuentas por Cobrar**.  
 2. Si nadie debe → mensaje de **todo cobrado**.  
-3. Si hay deudas → lista con cliente, día, sacos y **monto que debe**.  
+3. Si hay deudas → lista con cliente, día, kilos y **monto que debe**.  
 4. Para marcar un cobro:
    - Elige la entrega  
    - Elige cómo pagó: **efectivo** o **transferencia**  
@@ -189,7 +189,7 @@ Si algo no carga, en el menú hay **Recargar desde la nube** (solo cuando hay nu
 ```
 1. Entra con usuario y contraseña
 2. Cuaderno Semanal → elige la semana → elige el día
-3. Pollería + sacos + precio + forma de pago → Guardar
+3. Pollería + kilos + precio + forma de pago → Guardar
 4. Si te equivocaste → Corregir o borrar
 5. Al final de la semana → Resumen → Excel o PDF
 6. Deudas → Cuentas por Cobrar → Registrar cobro
