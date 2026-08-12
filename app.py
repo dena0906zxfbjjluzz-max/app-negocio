@@ -1,6 +1,11 @@
-import streamlit as st
-import pandas as pd
+from __future__ import annotations
+
+import base64
 from datetime import date
+from pathlib import Path
+
+import pandas as pd
+import streamlit as st
 
 from reportes import generar_excel_cuaderno, generar_pdf_resumen
 from db import (
@@ -19,10 +24,48 @@ st.set_page_config(
 
 NOMBRE_NEGOCIO = "Lisbet"
 ESLOGAN = "Control de papas y pollerías · del cuaderno a la nube"
+LOGIN_BG = Path(__file__).resolve().parent / "assets" / "login_papas.jpg"
 
 # Demo local si aún no hay secrets (cámbialo en Streamlit Cloud)
 USUARIO_DEMO = "admin"
 CLAVE_DEMO = "papas2026"
+
+
+def _imagen_base64(ruta: Path) -> str | None:
+    if not ruta.is_file():
+        return None
+    return base64.b64encode(ruta.read_bytes()).decode("ascii")
+
+
+def aplicar_estilo_login_fondo() -> None:
+    """Foto de papas de fondo solo en la pantalla de usuario/contraseña."""
+    b64 = _imagen_base64(LOGIN_BG)
+    if not b64:
+        return
+    st.markdown(
+        f"""
+<style>
+[data-testid="stAppViewContainer"] {{
+  background:
+    linear-gradient(105deg, rgba(18, 20, 16, 0.55) 0%, rgba(18, 20, 16, 0.72) 42%, rgba(18, 20, 16, 0.88) 100%),
+    url("data:image/jpeg;base64,{b64}") left center / cover no-repeat fixed !important;
+}}
+
+.lisbet-hero {{
+  background: rgba(30, 36, 28, 0.72) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}}
+
+div[data-testid="stForm"] {{
+  background: rgba(30, 36, 28, 0.88) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}}
+</style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def aplicar_estilo_negocio() -> None:
@@ -349,6 +392,7 @@ if "usuario_sesion" not in st.session_state:
 
 # ---------- LOGIN ----------
 if not st.session_state.autenticado:
+    aplicar_estilo_login_fondo()
     st.markdown(
         f"""
 <div class="lisbet-hero">
