@@ -12,14 +12,131 @@ from db import (
 )
 
 st.set_page_config(
-    page_title="Control Papas - Pollerías",
+    page_title="Lisbet · Papas y Pollerías",
     page_icon="🥔",
     layout="centered",
 )
 
+NOMBRE_NEGOCIO = "Lisbet"
+ESLOGAN = "Control de papas y pollerías · del cuaderno a la nube"
+
 # Demo local si aún no hay secrets (cámbialo en Streamlit Cloud)
 USUARIO_DEMO = "admin"
 CLAVE_DEMO = "papas2026"
+
+
+def aplicar_estilo_negocio() -> None:
+    """Fondo y tipografía de marca (papas) — no cambia la lógica del negocio."""
+    st.markdown(
+        """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600&display=swap');
+
+html, body, [data-testid="stAppViewContainer"] {
+  font-family: "Source Sans 3", sans-serif;
+}
+
+[data-testid="stAppViewContainer"] {
+  background:
+    radial-gradient(ellipse 90% 60% at 10% 0%, rgba(196, 140, 58, 0.35), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 95% 15%, rgba(120, 78, 36, 0.28), transparent 50%),
+    linear-gradient(165deg, #2a1a0e 0%, #4a3218 38%, #6b4a22 72%, #3d2814 100%);
+  background-attachment: fixed;
+}
+
+[data-testid="stHeader"] {
+  background: rgba(42, 26, 14, 0.55);
+}
+
+[data-testid="stSidebar"] {
+  background: linear-gradient(180deg, #24160c 0%, #3a2614 100%);
+}
+
+[data-testid="stSidebar"] * {
+  color: #f3e6d0 !important;
+}
+
+.block-container {
+  padding-top: 1.2rem;
+}
+
+.lisbet-hero {
+  text-align: center;
+  padding: 1.6rem 1rem 1.2rem;
+  margin: 0 0 1rem 0;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 236, 200, 0.14), rgba(90, 55, 20, 0.35)),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c48c3a' fill-opacity='0.12'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Ccircle cx='40' cy='28' r='5'/%3E%3Ccircle cx='18' cy='44' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  border: 1px solid rgba(232, 196, 120, 0.35);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+}
+
+.lisbet-hero .brand {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(2.4rem, 8vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #ffe8b8;
+  line-height: 1.05;
+  margin: 0;
+  text-shadow: 0 2px 18px rgba(0,0,0,0.35);
+}
+
+.lisbet-hero .tag {
+  margin: 0.55rem 0 0 0;
+  font-size: 1.05rem;
+  color: #f0d9a8;
+  font-weight: 600;
+}
+
+.lisbet-hero .sub {
+  margin: 0.45rem auto 0;
+  max-width: 28rem;
+  font-size: 0.95rem;
+  color: #e8d4b0;
+  opacity: 0.92;
+}
+
+.lisbet-chip {
+  display: inline-block;
+  margin-top: 0.85rem;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #2a1a0e;
+  background: #e8c478;
+  font-weight: 700;
+}
+
+div[data-testid="stForm"] {
+  background: rgba(255, 248, 235, 0.92);
+  padding: 1.1rem 1rem 0.6rem;
+  border-radius: 14px;
+  border: 1px solid rgba(120, 78, 36, 0.25);
+}
+
+h1, h2, h3 {
+  font-family: Fraunces, Georgia, serif !important;
+  color: #ffe8b8 !important;
+}
+
+p, label, .stMarkdown, [data-testid="stCaption"] {
+  color: #f5ebdc !important;
+}
+
+[data-testid="stMetricValue"], [data-testid="stMetricLabel"] {
+  color: #fff6e8 !important;
+}
+</style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+aplicar_estilo_negocio()
 
 
 def cargar_credenciales() -> tuple[str, str, bool]:
@@ -183,9 +300,18 @@ if "usuario_sesion" not in st.session_state:
 
 # ---------- LOGIN ----------
 if not st.session_state.autenticado:
-    st.title("Control de Papas y Pollerías")
-    st.caption("Acceso restringido · introduzca su usuario y contraseña")
-    st.divider()
+    st.markdown(
+        f"""
+<div class="lisbet-hero">
+  <p class="brand">{NOMBRE_NEGOCIO}</p>
+  <p class="tag">🥔 Papas · pollerías · cobranzas</p>
+  <p class="sub">{ESLOGAN}</p>
+  <span class="lisbet-chip">Negocio de {NOMBRE_NEGOCIO}</span>
+</div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.caption("Acceso restringido · usuario y contraseña")
 
     usuario_ok, clave_ok, es_demo = cargar_credenciales()
     if es_demo:
@@ -218,7 +344,7 @@ if not st.session_state.autenticado:
 if "base_ventas" not in st.session_state:
     st.session_state.base_ventas = cargar_datos_iniciales()
 
-st.sidebar.title("Menú")
+st.sidebar.title(f"🥔 {NOMBRE_NEGOCIO}")
 st.sidebar.caption(f"Sesión: **{st.session_state.usuario_sesion or 'usuario'}**")
 if st.sidebar.button("Cerrar sesión", use_container_width=True):
     st.session_state.autenticado = False
@@ -247,7 +373,15 @@ seccion = st.sidebar.radio(
     ["Cuaderno Semanal", "Resumen Semanal", "Cuentas por Cobrar"],
 )
 
-st.title("Control de Papas y Pollerías")
+st.markdown(
+    f"""
+<div class="lisbet-hero" style="padding:1rem 1rem 0.85rem;margin-bottom:0.75rem;">
+  <p class="brand" style="font-size:clamp(1.8rem,6vw,2.6rem);">{NOMBRE_NEGOCIO}</p>
+  <p class="tag">Control de papas y pollerías</p>
+</div>
+    """,
+    unsafe_allow_html=True,
+)
 if USAR_NUBE:
     st.caption("Los despachos se guardan en Supabase (no se pierden al cerrar sesión).")
 else:
