@@ -38,7 +38,7 @@ def _imagen_base64(ruta: Path) -> str | None:
 
 
 def aplicar_estilo_login_fondo() -> None:
-    """Foto de papas de fondo solo en la pantalla de usuario/contraseña."""
+    """Foto de papas de fondo; panel de login a la derecha, mezclado con el fondo."""
     b64 = _imagen_base64(LOGIN_BG)
     if not b64:
         return
@@ -47,20 +47,72 @@ def aplicar_estilo_login_fondo() -> None:
 <style>
 [data-testid="stAppViewContainer"] {{
   background:
-    linear-gradient(105deg, rgba(18, 20, 16, 0.55) 0%, rgba(18, 20, 16, 0.72) 42%, rgba(18, 20, 16, 0.88) 100%),
+    linear-gradient(90deg,
+      rgba(18, 20, 16, 0.25) 0%,
+      rgba(18, 20, 16, 0.35) 45%,
+      rgba(18, 20, 16, 0.55) 100%),
     url("data:image/jpeg;base64,{b64}") left center / cover no-repeat fixed !important;
 }}
 
+[data-testid="stHeader"] {{
+  background: transparent !important;
+}}
+
+/* Empuja Lisbet + formulario hacia la derecha (hueco de la foto) */
+div.block-container {{
+  max-width: 26rem !important;
+  margin-left: auto !important;
+  margin-right: 4vw !important;
+  padding-top: 2.2rem !important;
+  padding-bottom: 2rem !important;
+}}
+
 .lisbet-hero {{
-  background: rgba(30, 36, 28, 0.72) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  text-align: left !important;
+  background: rgba(18, 20, 16, 0.28) !important;
+  border: 1px solid rgba(230, 180, 34, 0.22) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}}
+
+.lisbet-hero .brand {{
+  text-shadow: 0 2px 14px rgba(0,0,0,0.55);
+}}
+
+.lisbet-hero .sub {{
+  margin-left: 0 !important;
 }}
 
 div[data-testid="stForm"] {{
-  background: rgba(30, 36, 28, 0.88) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(18, 20, 16, 0.32) !important;
+  border: 1px solid rgba(230, 180, 34, 0.25) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}}
+
+.stTextInput input {{
+  background-color: rgba(18, 20, 16, 0.45) !important;
+}}
+
+@media (max-width: 780px) {{
+  div.block-container {{
+    max-width: 100% !important;
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+  }}
+  .lisbet-hero {{
+    text-align: center !important;
+  }}
+  .lisbet-hero .sub {{
+    margin-left: auto !important;
+  }}
+  [data-testid="stAppViewContainer"] {{
+    background:
+      linear-gradient(180deg, rgba(18, 20, 16, 0.4) 0%, rgba(18, 20, 16, 0.65) 100%),
+      url("data:image/jpeg;base64,{b64}") left center / cover no-repeat fixed !important;
+  }}
 }}
 </style>
         """,
