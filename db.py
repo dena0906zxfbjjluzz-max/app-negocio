@@ -1,4 +1,4 @@
-"""Cliente Supabase para despachos (persistencia al cerrar sesión)."""
+"""Cliente Supabase para despachos y gastos (persistencia al cerrar sesión)."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ from typing import Any
 
 
 TABLA = "despachos_papas"
+TABLA_GASTOS = "gastos_negocio"
 
 
 def _secrets_url_key() -> tuple[str | None, str | None]:
@@ -146,3 +147,68 @@ def borrar_despacho(id_: int) -> None:
     if client is None:
         raise RuntimeError("Supabase no configurado")
     client.table(TABLA).delete().eq("id", id_).execute()
+
+
+def _fila_a_gasto(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": row.get("id"),
+        "semana": row.get("semana") or "",
+        "dia": row.get("dia") or "",
+        "categoria": row.get("categoria") or "Otro",
+        "concepto": row.get("concepto") or "",
+        "monto": float(row.get("monto") or 0),
+    }
+
+
+def _payload_gasto(gasto: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "semana": gasto["semana"],
+        "dia": gasto["dia"],
+        "categoria": gasto["categoria"],
+        "concepto": gasto.get("concepto") or "",
+        "monto": float(gasto["monto"]),
+    }
+
+
+def listar_gastos(semana: str | None = None) -> list[dict[str, Any]]:
+    client = get_client()
+    if client is None:
+        return []
+    q = client.table(TABLA_GASTOS).select("*").order("id", desc=False)
+    if semana:
+        q = q.eq("semana", semana)
+    resp = q.execute()
+    rows = resp.data or []
+    return [_fila_a_gasto(r) for r in rows]
+
+
+def insertar_gasto(gasto: dict[str, Any]) -> dict[str, Any]:
+    client = get_client()
+    if client is None:
+        raise RuntimeError("Supabase no configurado")
+    resp = client.table(TABLA_GASTOS).insert(_payload_gasto(gasto)).execute()
+    if not resp.data:
+        raise RuntimeError("Insert vacío en gastos")
+    return _fila_a_gasto(resp.data[0])
+
+
+def actualizar_gasto(id_: int, gasto: dict[str, Any]) -> dict[str, Any]:
+    client = get_client()
+    if client is None:
+        raise RuntimeError("Supabase no configurado")
+    resp = (
+        client.table(TABLA_GASTOS)
+        .update(_payload_gasto(gasto))
+        .eq("id", id_)
+        .execute()
+    )
+    if not resp.data:
+        raise RuntimeError(f"No se actualizó gasto id={id_}")
+    return _fila_a_gasto(resp.data[0])
+
+
+def borrar_gasto(id_: int) -> None:
+    client = get_client()
+    if client is None:
+        raise RuntimeError("Supabase no configurado")
+    client.table(TABLA_GASTOS).delete().eq("id", id_).execute()
