@@ -133,24 +133,64 @@ label, p, .stMarkdown {{
     )
 
 
-def aplicar_estilo_negocio() -> None:
-    """Fondo blanco cálido + acento mostaza — no cambia la lógica del negocio."""
-    st.markdown(
-        """
-<style>
+def _css_fuentes() -> str:
+    return """
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Literata:opsz,wght@7..72,600;7..72,700&display=swap');
 
+html, body, [data-testid="stAppViewContainer"] {
+  font-family: "DM Sans", sans-serif;
+}
+
+.block-container {
+  padding-top: 1.1rem;
+}
+
+div[data-testid="stForm"] button[kind="primary"],
+button[kind="primary"] {
+  background: linear-gradient(90deg, #E6B422, #C99512) !important;
+  color: #121410 !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+
+.lisbet-chip {
+  display: inline-block;
+  margin-top: 0.9rem;
+  padding: 0.32rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #121410;
+  background: #E6B422;
+  font-weight: 700;
+}
+
+.lisbet-potato {
+  font-size: 3.2rem;
+  line-height: 1;
+  margin: 0.35rem 0 0.15rem;
+  filter: drop-shadow(0 4px 12px rgba(230, 180, 34, 0.35));
+}
+
+h1, h2, h3 {
+  font-family: Literata, Georgia, serif !important;
+}
+
+[data-testid="stAlert"] {
+  border-radius: 12px;
+}
+"""
+
+
+def _css_tema_claro() -> str:
+    return """
 :root {
   --bg: #FFFFFF;
   --card: #F7F6F2;
   --accent: #E6B422;
-  --accent-soft: #F0D078;
   --text: #1A1C16;
   --muted: #5C6156;
-}
-
-html, body, [data-testid="stAppViewContainer"] {
-  font-family: "DM Sans", sans-serif;
 }
 
 [data-testid="stAppViewContainer"] {
@@ -176,10 +216,6 @@ html, body, [data-testid="stAppViewContainer"] {
 
 [data-testid="stSidebar"] * {
   color: #1A1C16 !important;
-}
-
-.block-container {
-  padding-top: 1.1rem;
 }
 
 .lisbet-hero {
@@ -208,7 +244,7 @@ html, body, [data-testid="stAppViewContainer"] {
 .lisbet-hero .tag {
   margin: 0.55rem 0 0 0;
   font-size: 1.05rem;
-  color: #C99512;
+  color: #E6B422;
   font-weight: 600;
 }
 
@@ -219,26 +255,6 @@ html, body, [data-testid="stAppViewContainer"] {
   color: #5C6156;
 }
 
-.lisbet-chip {
-  display: inline-block;
-  margin-top: 0.9rem;
-  padding: 0.32rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #121410;
-  background: #E6B422;
-  font-weight: 700;
-}
-
-.lisbet-potato {
-  font-size: 3.2rem;
-  line-height: 1;
-  margin: 0.35rem 0 0.15rem;
-  filter: drop-shadow(0 4px 12px rgba(230, 180, 34, 0.25));
-}
-
 div[data-testid="stForm"] {
   background: #F7F6F2;
   padding: 1.15rem 1rem 0.7rem;
@@ -247,16 +263,7 @@ div[data-testid="stForm"] {
   box-shadow: 0 6px 18px rgba(26, 28, 22, 0.05);
 }
 
-div[data-testid="stForm"] button[kind="primary"],
-button[kind="primary"] {
-  background: linear-gradient(90deg, #E6B422, #C99512) !important;
-  color: #121410 !important;
-  border: none !important;
-  font-weight: 700 !important;
-}
-
 h1, h2, h3 {
-  font-family: Literata, Georgia, serif !important;
   color: #1A1C16 !important;
 }
 
@@ -270,7 +277,7 @@ p, label, .stMarkdown, [data-testid="stCaption"],
 }
 
 [data-testid="stMetricValue"] {
-  color: #C99512 !important;
+  color: #E6B422 !important;
 }
 
 .stTextInput input, .stNumberInput input, .stSelectbox [data-baseweb="select"] > div {
@@ -284,17 +291,128 @@ p, label, .stMarkdown, [data-testid="stCaption"],
   border-color: #E6B422 !important;
   box-shadow: 0 0 0 1px #E6B422 !important;
 }
+"""
 
-[data-testid="stAlert"] {
-  border-radius: 12px;
+
+def _css_tema_oscuro() -> str:
+    return """
+:root {
+  --bg: #121410;
+  --card: #1E241C;
+  --accent: #E6B422;
+  --text: #FAFAF7;
+  --muted: #C5C9BE;
 }
-</style>
-        """,
+
+[data-testid="stAppViewContainer"] {
+  background:
+    radial-gradient(ellipse 85% 50% at 50% -5%, rgba(230, 180, 34, 0.16), transparent 55%),
+    radial-gradient(ellipse 55% 40% at 0% 80%, rgba(90, 120, 60, 0.12), transparent 50%),
+    #121410;
+  background-attachment: fixed;
+}
+
+[data-testid="stHeader"] {
+  background: rgba(18, 20, 16, 0.9);
+}
+
+[data-testid="stSidebar"] {
+  background: #1E241C !important;
+  border-right: none;
+}
+
+[data-testid="stSidebar"] > div:first-child {
+  background: #1E241C;
+}
+
+[data-testid="stSidebar"] * {
+  color: #FAFAF7 !important;
+}
+
+.lisbet-hero {
+  text-align: center;
+  padding: 1.75rem 1.1rem 1.35rem;
+  margin: 0 0 1rem 0;
+  border-radius: 20px;
+  background:
+    linear-gradient(165deg, rgba(30, 36, 28, 0.98), rgba(18, 20, 16, 0.96)),
+    url("data:image/svg+xml,%3Csvg width='72' height='72' viewBox='0 0 72 72' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23E6B422' fill-opacity='0.09'%3E%3Cellipse cx='18' cy='20' rx='11' ry='9'/%3E%3Cellipse cx='50' cy='42' rx='13' ry='10'/%3E%3Cellipse cx='28' cy='55' rx='9' ry='7'/%3E%3C/g%3E%3C/svg%3E");
+  border: 1px solid rgba(230, 180, 34, 0.4);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+}
+
+.lisbet-hero .brand {
+  font-family: Literata, Georgia, serif;
+  font-size: clamp(2.5rem, 9vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #FAFAF7;
+  line-height: 1.05;
+  margin: 0;
+  text-shadow: 0 2px 20px rgba(230, 180, 34, 0.25);
+}
+
+.lisbet-hero .tag {
+  margin: 0.55rem 0 0 0;
+  font-size: 1.05rem;
+  color: #E6B422;
+  font-weight: 600;
+}
+
+.lisbet-hero .sub {
+  margin: 0.5rem auto 0;
+  max-width: 28rem;
+  font-size: 0.95rem;
+  color: #C5C9BE;
+}
+
+div[data-testid="stForm"] {
+  background: #1E241C;
+  padding: 1.15rem 1rem 0.7rem;
+  border-radius: 16px;
+  border: 1px solid rgba(230, 180, 34, 0.28);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+h1, h2, h3 {
+  color: #FAFAF7 !important;
+}
+
+p, label, .stMarkdown, [data-testid="stCaption"],
+[data-testid="stWidgetLabel"] p {
+  color: #FAFAF7 !important;
+}
+
+[data-testid="stMetricLabel"] {
+  color: #C5C9BE !important;
+}
+
+[data-testid="stMetricValue"] {
+  color: #E6B422 !important;
+}
+
+.stTextInput input, .stNumberInput input, .stSelectbox [data-baseweb="select"] > div {
+  background-color: #121410 !important;
+  color: #FAFAF7 !important;
+  border: 1px solid rgba(230, 180, 34, 0.32) !important;
+  border-radius: 12px !important;
+}
+
+.stTextInput input:focus, .stNumberInput input:focus {
+  border-color: #E6B422 !important;
+  box-shadow: 0 0 0 1px #E6B422 !important;
+}
+"""
+
+
+def aplicar_estilo_negocio(tema: str = "Claro") -> None:
+    """Aplica tono claro u oscuro (acento mostaza igual en ambos)."""
+    cuerpo = _css_tema_oscuro() if tema == "Oscuro" else _css_tema_claro()
+    st.markdown(
+        f"<style>{_css_fuentes()}{cuerpo}</style>",
         unsafe_allow_html=True,
     )
 
-
-aplicar_estilo_negocio()
 
 
 def cargar_credenciales() -> tuple[str, str, bool]:
@@ -455,9 +573,12 @@ if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
 if "usuario_sesion" not in st.session_state:
     st.session_state.usuario_sesion = ""
+if "tema_app" not in st.session_state:
+    st.session_state.tema_app = "Claro"
 
 # ---------- LOGIN ----------
 if not st.session_state.autenticado:
+    st.markdown(f"<style>{_css_fuentes()}</style>", unsafe_allow_html=True)
     aplicar_estilo_login_fondo()
     st.markdown(
         f"""
@@ -506,6 +627,15 @@ if "base_ventas" not in st.session_state:
 
 st.sidebar.title(f"🥔 {NOMBRE_NEGOCIO}")
 st.sidebar.caption(f"Sesión: **{st.session_state.usuario_sesion or 'usuario'}**")
+st.sidebar.radio(
+    "Tono",
+    ["Claro", "Oscuro"],
+    horizontal=True,
+    key="tema_app",
+    help="Fondo blanco o el tono oscuro anterior",
+)
+aplicar_estilo_negocio(st.session_state.tema_app)
+
 if st.sidebar.button("Cerrar sesión", use_container_width=True):
     st.session_state.autenticado = False
     st.session_state.usuario_sesion = ""
