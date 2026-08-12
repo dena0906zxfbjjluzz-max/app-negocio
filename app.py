@@ -17,12 +17,12 @@ from db import (
 )
 
 st.set_page_config(
-    page_title="LISBEHT · Papas y Pollerías",
+    page_title="Lisbeth · Papas y Pollerías",
     page_icon="🥔",
     layout="centered",
 )
 
-NOMBRE_NEGOCIO = "LISBEHT"
+NOMBRE_NEGOCIO = "Lisbeth"
 ESLOGAN = "Control de papas y pollerías · del cuaderno a la nube"
 LOGIN_BG = Path(__file__).resolve().parent / "assets" / "login_papas.jpg"
 
