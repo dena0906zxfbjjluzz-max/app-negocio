@@ -42,14 +42,15 @@ En el menú de la izquierda (o menú lateral en el celular):
 
 ---
 
-## El menú (3 partes)
+## El menú (4 partes)
 
 Al entrar, a la izquierda (en el celular se abre con el menú):
 
 | Opción | Para qué |
 |--------|----------|
 | **Cuaderno Semanal** | Anotar cada despacho del día |
-| **Resumen Semanal** | Totales, quién falta, Excel y PDF |
+| **Gastos** | Compra de papas, transporte, personal, etc. |
+| **Resumen Semanal** | Totales, utilidad, gráficos, Excel y PDF |
 | **Cuentas por Cobrar** | Solo las pollerías que **deben** |
 
 ---

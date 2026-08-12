@@ -401,66 +401,11 @@ def monto_venta(v: dict) -> float:
 
 
 def datos_demo() -> list[dict]:
-    s = semana_label()
-    return [
-        {
-            "id": None,
-            "semana": s,
-            "dia": "Lunes",
-            "cliente": "Pollería Damnus",
-            "kilos": 50.0,
-            "precio": 2.60,
-            "estado": "Pagado en efectivo",
-        },
-        {
-            "id": None,
-            "semana": s,
-            "dia": "Lunes",
-            "cliente": "Pollería Reynoso",
-            "kilos": 80.0,
-            "precio": 2.50,
-            "estado": "Fiado / Debe",
-        },
-        {
-            "id": None,
-            "semana": s,
-            "dia": "Martes",
-            "cliente": "Pollería Taco tico",
-            "kilos": 60.0,
-            "precio": 2.55,
-            "estado": "Transferencia",
-        },
-    ]
+    return []
 
 
 def datos_demo_gastos() -> list[dict]:
-    s = semana_label()
-    return [
-        {
-            "id": None,
-            "semana": s,
-            "dia": "Lunes",
-            "categoria": "Compra de papas",
-            "concepto": "Mayorista",
-            "monto": 420.0,
-        },
-        {
-            "id": None,
-            "semana": s,
-            "dia": "Lunes",
-            "categoria": "Transporte",
-            "concepto": "Flete",
-            "monto": 80.0,
-        },
-        {
-            "id": None,
-            "semana": s,
-            "dia": "Martes",
-            "categoria": "Personal / jornal",
-            "concepto": "Ayudante",
-            "monto": 50.0,
-        },
-    ]
+    return []
 
 
 def cargar_datos_iniciales() -> list[dict]:
@@ -547,20 +492,12 @@ if not st.session_state.autenticado:
   <p class="brand">{NOMBRE_NEGOCIO}</p>
   <p class="tag">Papas · pollerías · cobranzas</p>
   <p class="sub">{ESLOGAN}</p>
-  <span class="lisbet-chip">Negocio de {NOMBRE_NEGOCIO}</span>
 </div>
         """,
         unsafe_allow_html=True,
     )
-    st.caption("SIGN IN · acceso restringido")
 
-    usuario_ok, clave_ok, es_demo = cargar_credenciales()
-    if es_demo:
-        st.info(
-            "Credenciales demo (sin secrets): "
-            f"**{USUARIO_DEMO}** / **{CLAVE_DEMO}**. "
-            "En Streamlit Cloud ponga las suyas en Settings → Secrets."
-        )
+    usuario_ok, clave_ok, _es_demo = cargar_credenciales()
 
     with st.form("login_form"):
         usuario_in = st.text_input("Usuario")
@@ -571,12 +508,10 @@ if not st.session_state.autenticado:
         if usuario_in.strip() == usuario_ok and clave_in == clave_ok:
             st.session_state.autenticado = True
             st.session_state.usuario_sesion = usuario_in.strip()
-            # Recargar datos de nube al entrar
             if "base_ventas" in st.session_state:
                 del st.session_state["base_ventas"]
             if "base_gastos" in st.session_state:
                 del st.session_state["base_gastos"]
-            st.success("Acceso concedido.")
             st.rerun()
         else:
             st.error("Usuario o contraseña incorrectos.")
@@ -601,7 +536,6 @@ if st.sidebar.button("Cerrar sesión", use_container_width=True):
     st.rerun()
 
 if USAR_NUBE:
-    st.sidebar.success("Datos en la nube (Supabase)")
     if st.sidebar.button("Recargar desde la nube", use_container_width=True):
         try:
             st.session_state.base_ventas = listar_despachos()
@@ -611,19 +545,14 @@ if USAR_NUBE:
             except Exception as eg:
                 st.session_state["error_gastos"] = str(eg)
                 st.session_state.base_gastos = []
-            st.sidebar.success("Datos actualizados.")
             st.rerun()
         except Exception as e:
             st.sidebar.error(f"Error: {e}")
-else:
-    st.sidebar.warning("Sin nube: se pierden al cerrar")
 
 if st.session_state.get("error_supabase"):
     st.sidebar.error(f"Supabase: {st.session_state['error_supabase']}")
 if st.session_state.get("error_gastos"):
-    st.sidebar.warning(
-        "Gastos: cree la tabla en Supabase (SQL: schema_gastos_negocio.sql)."
-    )
+    st.sidebar.warning("Falta crear la tabla de gastos en Supabase.")
 
 seccion = st.sidebar.radio(
     "Ir a",
@@ -639,13 +568,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-if USAR_NUBE:
-    st.caption("Los despachos se guardan en Supabase (no se pierden al cerrar sesión).")
-else:
-    st.caption(
-        "Modo local (memoria). Para no perder datos: cree la tabla en Supabase "
-        "y ponga SUPABASE_URL / SUPABASE_KEY en secrets."
-    )
 
 # =====================================================================
 # 1) CUADERNO SEMANAL
@@ -838,16 +760,9 @@ if seccion == "Cuaderno Semanal":
 # =====================================================================
 elif seccion == "Gastos":
     st.header("Gastos del negocio")
-    st.caption(
-        "Anote compras de papas, transporte, personal u otros. "
-        "Así el resumen muestra la utilidad neta (ventas − gastos)."
-    )
+    st.caption("Compra de papas, transporte, personal u otros → utilidad neta en el resumen.")
     if USAR_NUBE and st.session_state.get("error_gastos"):
-        st.error(
-            "No se pudo leer gastos en la nube. En Supabase → SQL Editor ejecute "
-            "el archivo `supabase/schema_gastos_negocio.sql` y luego "
-            "«Recargar desde la nube»."
-        )
+        st.error("No se pudo leer gastos. Ejecute el SQL de gastos en Supabase y recargue.")
 
     semana_act = st.selectbox(
         "Semana de gastos",
