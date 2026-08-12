@@ -1,11 +1,13 @@
-# Control de Papas y Pollerías
+# Lisbeth · Papas y Pollerías
 
-App Streamlit para registrar despachos semanales a pollerías, resúmenes y cuentas por cobrar.
+App Streamlit para despachos a pollerías, gastos, cobranza, gráficos y reportes Excel/PDF.
+
+**Manual de uso:** [MANUAL.md](MANUAL.md)
 
 ## Local
 
 ```bash
-python3.13 -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
@@ -13,12 +15,19 @@ streamlit run app.py
 
 ## Streamlit Cloud
 
-1. Deploy from this repo (`app.py`).
-2. En **Settings → Secrets** (opcional por ahora):
+1. Deploy desde este repo (`app.py`).
+2. **Settings → Secrets**:
 
 ```toml
+[credenciales]
+usuario = "lisbeth"
+clave = "tu_clave"
+
 SUPABASE_URL = "https://xxxx.supabase.co"
 SUPABASE_KEY = "tu-clave"
 ```
 
-Sin secrets la app funciona en memoria (session).
+3. En Supabase → SQL Editor, ejecutar en este orden:
+   - `supabase/schema_despachos_papas.sql`
+   - `supabase/schema_gastos_negocio.sql`
+   - (si la tabla vieja tenía `sacos`) `supabase/migrar_sacos_a_kilos.sql`
