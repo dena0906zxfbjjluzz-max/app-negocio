@@ -77,11 +77,17 @@ div.block-container {{
 }}
 
 .lisbet-hero .brand {{
+  color: #FAFAF7 !important;
   text-shadow: 0 2px 14px rgba(0,0,0,0.55);
+}}
+
+.lisbet-hero .tag {{
+  color: #E6B422 !important;
 }}
 
 .lisbet-hero .sub {{
   margin-left: 0 !important;
+  color: #E8EAE3 !important;
 }}
 
 div[data-testid="stForm"] {{
@@ -94,6 +100,13 @@ div[data-testid="stForm"] {{
 
 .stTextInput input {{
   background-color: rgba(18, 20, 16, 0.45) !important;
+  color: #FAFAF7 !important;
+}}
+
+[data-testid="stCaption"],
+[data-testid="stWidgetLabel"] p,
+label, p, .stMarkdown {{
+  color: #FAFAF7 !important;
 }}
 
 @media (max-width: 780px) {{
@@ -121,19 +134,19 @@ div[data-testid="stForm"] {{
 
 
 def aplicar_estilo_negocio() -> None:
-    """Paleta Papa Mercado (cálida, móvil) — no cambia la lógica del negocio."""
+    """Fondo blanco cálido + acento mostaza — no cambia la lógica del negocio."""
     st.markdown(
         """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Literata:opsz,wght@7..72,600;7..72,700&display=swap');
 
 :root {
-  --bg: #121410;
-  --card: #1E241C;
+  --bg: #FFFFFF;
+  --card: #F7F6F2;
   --accent: #E6B422;
   --accent-soft: #F0D078;
-  --text: #FAFAF7;
-  --muted: #C5C9BE;
+  --text: #1A1C16;
+  --muted: #5C6156;
 }
 
 html, body, [data-testid="stAppViewContainer"] {
@@ -142,26 +155,27 @@ html, body, [data-testid="stAppViewContainer"] {
 
 [data-testid="stAppViewContainer"] {
   background:
-    radial-gradient(ellipse 85% 50% at 50% -5%, rgba(230, 180, 34, 0.16), transparent 55%),
-    radial-gradient(ellipse 55% 40% at 0% 80%, rgba(90, 120, 60, 0.12), transparent 50%),
-    #121410;
+    radial-gradient(ellipse 90% 45% at 50% -8%, rgba(230, 180, 34, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 100% 90%, rgba(90, 120, 60, 0.06), transparent 50%),
+    #FFFFFF;
   background-attachment: fixed;
 }
 
 [data-testid="stHeader"] {
-  background: rgba(18, 20, 16, 0.9);
+  background: rgba(255, 255, 255, 0.92);
 }
 
 [data-testid="stSidebar"] {
-  background: #1E241C !important;
+  background: #F7F6F2 !important;
+  border-right: 1px solid rgba(26, 28, 22, 0.08);
 }
 
 [data-testid="stSidebar"] > div:first-child {
-  background: #1E241C;
+  background: #F7F6F2;
 }
 
 [data-testid="stSidebar"] * {
-  color: #FAFAF7 !important;
+  color: #1A1C16 !important;
 }
 
 .block-container {
@@ -174,10 +188,10 @@ html, body, [data-testid="stAppViewContainer"] {
   margin: 0 0 1rem 0;
   border-radius: 20px;
   background:
-    linear-gradient(165deg, rgba(30, 36, 28, 0.98), rgba(18, 20, 16, 0.96)),
-    url("data:image/svg+xml,%3Csvg width='72' height='72' viewBox='0 0 72 72' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23E6B422' fill-opacity='0.09'%3E%3Cellipse cx='18' cy='20' rx='11' ry='9'/%3E%3Cellipse cx='50' cy='42' rx='13' ry='10'/%3E%3Cellipse cx='28' cy='55' rx='9' ry='7'/%3E%3C/g%3E%3C/svg%3E");
-  border: 1px solid rgba(230, 180, 34, 0.4);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+    linear-gradient(165deg, #FFFFFF, #F7F6F2),
+    url("data:image/svg+xml,%3Csvg width='72' height='72' viewBox='0 0 72 72' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23E6B422' fill-opacity='0.08'%3E%3Cellipse cx='18' cy='20' rx='11' ry='9'/%3E%3Cellipse cx='50' cy='42' rx='13' ry='10'/%3E%3Cellipse cx='28' cy='55' rx='9' ry='7'/%3E%3C/g%3E%3C/svg%3E");
+  border: 1px solid rgba(230, 180, 34, 0.35);
+  box-shadow: 0 10px 28px rgba(26, 28, 22, 0.06);
 }
 
 .lisbet-hero .brand {
@@ -185,16 +199,16 @@ html, body, [data-testid="stAppViewContainer"] {
   font-size: clamp(2.5rem, 9vw, 3.5rem);
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: #FAFAF7;
+  color: #1A1C16;
   line-height: 1.05;
   margin: 0;
-  text-shadow: 0 2px 20px rgba(230, 180, 34, 0.25);
+  text-shadow: none;
 }
 
 .lisbet-hero .tag {
   margin: 0.55rem 0 0 0;
   font-size: 1.05rem;
-  color: #E6B422;
+  color: #C99512;
   font-weight: 600;
 }
 
@@ -202,7 +216,7 @@ html, body, [data-testid="stAppViewContainer"] {
   margin: 0.5rem auto 0;
   max-width: 28rem;
   font-size: 0.95rem;
-  color: #C5C9BE;
+  color: #5C6156;
 }
 
 .lisbet-chip {
@@ -222,15 +236,15 @@ html, body, [data-testid="stAppViewContainer"] {
   font-size: 3.2rem;
   line-height: 1;
   margin: 0.35rem 0 0.15rem;
-  filter: drop-shadow(0 4px 12px rgba(230, 180, 34, 0.35));
+  filter: drop-shadow(0 4px 12px rgba(230, 180, 34, 0.25));
 }
 
 div[data-testid="stForm"] {
-  background: #1E241C;
+  background: #F7F6F2;
   padding: 1.15rem 1rem 0.7rem;
   border-radius: 16px;
   border: 1px solid rgba(230, 180, 34, 0.28);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 6px 18px rgba(26, 28, 22, 0.05);
 }
 
 div[data-testid="stForm"] button[kind="primary"],
@@ -243,26 +257,26 @@ button[kind="primary"] {
 
 h1, h2, h3 {
   font-family: Literata, Georgia, serif !important;
-  color: #FAFAF7 !important;
+  color: #1A1C16 !important;
 }
 
 p, label, .stMarkdown, [data-testid="stCaption"],
 [data-testid="stWidgetLabel"] p {
-  color: #FAFAF7 !important;
+  color: #1A1C16 !important;
 }
 
 [data-testid="stMetricLabel"] {
-  color: #C5C9BE !important;
+  color: #5C6156 !important;
 }
 
 [data-testid="stMetricValue"] {
-  color: #E6B422 !important;
+  color: #C99512 !important;
 }
 
 .stTextInput input, .stNumberInput input, .stSelectbox [data-baseweb="select"] > div {
-  background-color: #121410 !important;
-  color: #FAFAF7 !important;
-  border: 1px solid rgba(230, 180, 34, 0.32) !important;
+  background-color: #FFFFFF !important;
+  color: #1A1C16 !important;
+  border: 1px solid rgba(26, 28, 22, 0.14) !important;
   border-radius: 12px !important;
 }
 
