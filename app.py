@@ -26,109 +26,162 @@ CLAVE_DEMO = "papas2026"
 
 
 def aplicar_estilo_negocio() -> None:
-    """Fondo y tipografía de marca (papas) — no cambia la lógica del negocio."""
+    """Paleta Premium Logística + marca Lisbet — no cambia la lógica del negocio."""
     st.markdown(
         """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+
+:root {
+  --bg: #0B0F19;
+  --card: #161B26;
+  --accent: #00F5D4;
+  --text: #FFFFFF;
+}
 
 html, body, [data-testid="stAppViewContainer"] {
-  font-family: "Source Sans 3", sans-serif;
+  font-family: "Outfit", sans-serif;
 }
 
 [data-testid="stAppViewContainer"] {
   background:
-    radial-gradient(ellipse 90% 60% at 10% 0%, rgba(196, 140, 58, 0.35), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 95% 15%, rgba(120, 78, 36, 0.28), transparent 50%),
-    linear-gradient(165deg, #2a1a0e 0%, #4a3218 38%, #6b4a22 72%, #3d2814 100%);
+    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(0, 245, 212, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(0, 245, 212, 0.06), transparent 45%),
+    #0B0F19;
   background-attachment: fixed;
 }
 
 [data-testid="stHeader"] {
-  background: rgba(42, 26, 14, 0.55);
+  background: rgba(11, 15, 25, 0.85);
 }
 
 [data-testid="stSidebar"] {
-  background: linear-gradient(180deg, #24160c 0%, #3a2614 100%);
+  background: #161B26 !important;
+}
+
+[data-testid="stSidebar"] > div:first-child {
+  background: #161B26;
 }
 
 [data-testid="stSidebar"] * {
-  color: #f3e6d0 !important;
+  color: #FFFFFF !important;
 }
 
 .block-container {
-  padding-top: 1.2rem;
+  padding-top: 1.1rem;
 }
 
 .lisbet-hero {
   text-align: center;
-  padding: 1.6rem 1rem 1.2rem;
+  padding: 1.75rem 1.1rem 1.35rem;
   margin: 0 0 1rem 0;
-  border-radius: 18px;
+  border-radius: 20px;
   background:
-    linear-gradient(135deg, rgba(255, 236, 200, 0.14), rgba(90, 55, 20, 0.35)),
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c48c3a' fill-opacity='0.12'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Ccircle cx='40' cy='28' r='5'/%3E%3Ccircle cx='18' cy='44' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  border: 1px solid rgba(232, 196, 120, 0.35);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    linear-gradient(160deg, rgba(22, 27, 38, 0.95), rgba(11, 15, 25, 0.98)),
+    url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2300F5D4' fill-opacity='0.07'%3E%3Cellipse cx='20' cy='22' rx='10' ry='8'/%3E%3Cellipse cx='55' cy='48' rx='12' ry='9'/%3E%3Cellipse cx='30' cy='60' rx='8' ry='6'/%3E%3C/g%3E%3C/svg%3E");
+  border: 1px solid rgba(0, 245, 212, 0.35);
+  box-shadow:
+    0 0 28px rgba(0, 245, 212, 0.12),
+    0 16px 40px rgba(0, 0, 0, 0.45);
 }
 
 .lisbet-hero .brand {
-  font-family: Fraunces, Georgia, serif;
-  font-size: clamp(2.4rem, 8vw, 3.4rem);
+  font-family: Outfit, sans-serif;
+  font-size: clamp(2.5rem, 9vw, 3.5rem);
   font-weight: 700;
-  letter-spacing: 0.02em;
-  color: #ffe8b8;
+  letter-spacing: 0.04em;
+  color: #FFFFFF;
   line-height: 1.05;
   margin: 0;
-  text-shadow: 0 2px 18px rgba(0,0,0,0.35);
+  text-shadow: 0 0 24px rgba(0, 245, 212, 0.35);
 }
 
 .lisbet-hero .tag {
   margin: 0.55rem 0 0 0;
   font-size: 1.05rem;
-  color: #f0d9a8;
+  color: #00F5D4;
   font-weight: 600;
 }
 
 .lisbet-hero .sub {
-  margin: 0.45rem auto 0;
+  margin: 0.5rem auto 0;
   max-width: 28rem;
   font-size: 0.95rem;
-  color: #e8d4b0;
-  opacity: 0.92;
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .lisbet-chip {
   display: inline-block;
-  margin-top: 0.85rem;
-  padding: 0.28rem 0.75rem;
+  margin-top: 0.9rem;
+  padding: 0.32rem 0.85rem;
   border-radius: 999px;
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #2a1a0e;
-  background: #e8c478;
+  color: #0B0F19;
+  background: #00F5D4;
   font-weight: 700;
+  box-shadow: 0 0 18px rgba(0, 245, 212, 0.45);
+}
+
+.lisbet-potato {
+  font-size: 3.2rem;
+  line-height: 1;
+  margin: 0.35rem 0 0.15rem;
+  filter: drop-shadow(0 0 14px rgba(0, 245, 212, 0.55));
 }
 
 div[data-testid="stForm"] {
-  background: rgba(255, 248, 235, 0.92);
-  padding: 1.1rem 1rem 0.6rem;
-  border-radius: 14px;
-  border: 1px solid rgba(120, 78, 36, 0.25);
+  background: #161B26;
+  padding: 1.15rem 1rem 0.7rem;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 245, 212, 0.28);
+  box-shadow: 0 0 20px rgba(0, 245, 212, 0.08);
+}
+
+/* Botón primario turquesa */
+div[data-testid="stForm"] button[kind="primary"],
+button[kind="primary"] {
+  background: linear-gradient(90deg, #00F5D4, #00c9b0) !important;
+  color: #0B0F19 !important;
+  border: none !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 18px rgba(0, 245, 212, 0.4);
 }
 
 h1, h2, h3 {
-  font-family: Fraunces, Georgia, serif !important;
-  color: #ffe8b8 !important;
+  font-family: Outfit, sans-serif !important;
+  color: #FFFFFF !important;
 }
 
-p, label, .stMarkdown, [data-testid="stCaption"] {
-  color: #f5ebdc !important;
+p, label, .stMarkdown, [data-testid="stCaption"],
+[data-testid="stWidgetLabel"] p {
+  color: #FFFFFF !important;
 }
 
 [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {
-  color: #fff6e8 !important;
+  color: #FFFFFF !important;
+}
+
+[data-testid="stMetricValue"] {
+  color: #00F5D4 !important;
+}
+
+/* Inputs */
+.stTextInput input, .stNumberInput input, .stSelectbox [data-baseweb="select"] > div {
+  background-color: #0B0F19 !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(0, 245, 212, 0.35) !important;
+  border-radius: 12px !important;
+}
+
+.stTextInput input:focus, .stNumberInput input:focus {
+  border-color: #00F5D4 !important;
+  box-shadow: 0 0 0 1px #00F5D4 !important;
+}
+
+[data-testid="stAlert"] {
+  border-radius: 12px;
 }
 </style>
         """,
@@ -303,15 +356,16 @@ if not st.session_state.autenticado:
     st.markdown(
         f"""
 <div class="lisbet-hero">
+  <p class="lisbet-potato">🥔</p>
   <p class="brand">{NOMBRE_NEGOCIO}</p>
-  <p class="tag">🥔 Papas · pollerías · cobranzas</p>
+  <p class="tag">Papas · pollerías · cobranzas</p>
   <p class="sub">{ESLOGAN}</p>
   <span class="lisbet-chip">Negocio de {NOMBRE_NEGOCIO}</span>
 </div>
         """,
         unsafe_allow_html=True,
     )
-    st.caption("Acceso restringido · usuario y contraseña")
+    st.caption("SIGN IN · acceso restringido")
 
     usuario_ok, clave_ok, es_demo = cargar_credenciales()
     if es_demo:
