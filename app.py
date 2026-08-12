@@ -26,45 +26,47 @@ CLAVE_DEMO = "papas2026"
 
 
 def aplicar_estilo_negocio() -> None:
-    """Paleta Premium Logística + marca Lisbet — no cambia la lógica del negocio."""
+    """Paleta Papa Mercado (cálida, móvil) — no cambia la lógica del negocio."""
     st.markdown(
         """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Literata:opsz,wght@7..72,600;7..72,700&display=swap');
 
 :root {
-  --bg: #0B0F19;
-  --card: #161B26;
-  --accent: #00F5D4;
-  --text: #FFFFFF;
+  --bg: #121410;
+  --card: #1E241C;
+  --accent: #E6B422;
+  --accent-soft: #F0D078;
+  --text: #FAFAF7;
+  --muted: #C5C9BE;
 }
 
 html, body, [data-testid="stAppViewContainer"] {
-  font-family: "Outfit", sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 [data-testid="stAppViewContainer"] {
   background:
-    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(0, 245, 212, 0.12), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(0, 245, 212, 0.06), transparent 45%),
-    #0B0F19;
+    radial-gradient(ellipse 85% 50% at 50% -5%, rgba(230, 180, 34, 0.16), transparent 55%),
+    radial-gradient(ellipse 55% 40% at 0% 80%, rgba(90, 120, 60, 0.12), transparent 50%),
+    #121410;
   background-attachment: fixed;
 }
 
 [data-testid="stHeader"] {
-  background: rgba(11, 15, 25, 0.85);
+  background: rgba(18, 20, 16, 0.9);
 }
 
 [data-testid="stSidebar"] {
-  background: #161B26 !important;
+  background: #1E241C !important;
 }
 
 [data-testid="stSidebar"] > div:first-child {
-  background: #161B26;
+  background: #1E241C;
 }
 
 [data-testid="stSidebar"] * {
-  color: #FFFFFF !important;
+  color: #FAFAF7 !important;
 }
 
 .block-container {
@@ -77,29 +79,27 @@ html, body, [data-testid="stAppViewContainer"] {
   margin: 0 0 1rem 0;
   border-radius: 20px;
   background:
-    linear-gradient(160deg, rgba(22, 27, 38, 0.95), rgba(11, 15, 25, 0.98)),
-    url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2300F5D4' fill-opacity='0.07'%3E%3Cellipse cx='20' cy='22' rx='10' ry='8'/%3E%3Cellipse cx='55' cy='48' rx='12' ry='9'/%3E%3Cellipse cx='30' cy='60' rx='8' ry='6'/%3E%3C/g%3E%3C/svg%3E");
-  border: 1px solid rgba(0, 245, 212, 0.35);
-  box-shadow:
-    0 0 28px rgba(0, 245, 212, 0.12),
-    0 16px 40px rgba(0, 0, 0, 0.45);
+    linear-gradient(165deg, rgba(30, 36, 28, 0.98), rgba(18, 20, 16, 0.96)),
+    url("data:image/svg+xml,%3Csvg width='72' height='72' viewBox='0 0 72 72' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23E6B422' fill-opacity='0.09'%3E%3Cellipse cx='18' cy='20' rx='11' ry='9'/%3E%3Cellipse cx='50' cy='42' rx='13' ry='10'/%3E%3Cellipse cx='28' cy='55' rx='9' ry='7'/%3E%3C/g%3E%3C/svg%3E");
+  border: 1px solid rgba(230, 180, 34, 0.4);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
 }
 
 .lisbet-hero .brand {
-  font-family: Outfit, sans-serif;
+  font-family: Literata, Georgia, serif;
   font-size: clamp(2.5rem, 9vw, 3.5rem);
   font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #FFFFFF;
+  letter-spacing: 0.02em;
+  color: #FAFAF7;
   line-height: 1.05;
   margin: 0;
-  text-shadow: 0 0 24px rgba(0, 245, 212, 0.35);
+  text-shadow: 0 2px 20px rgba(230, 180, 34, 0.25);
 }
 
 .lisbet-hero .tag {
   margin: 0.55rem 0 0 0;
   font-size: 1.05rem;
-  color: #00F5D4;
+  color: #E6B422;
   font-weight: 600;
 }
 
@@ -107,7 +107,7 @@ html, body, [data-testid="stAppViewContainer"] {
   margin: 0.5rem auto 0;
   max-width: 28rem;
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.82);
+  color: #C5C9BE;
 }
 
 .lisbet-chip {
@@ -118,66 +118,62 @@ html, body, [data-testid="stAppViewContainer"] {
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #0B0F19;
-  background: #00F5D4;
+  color: #121410;
+  background: #E6B422;
   font-weight: 700;
-  box-shadow: 0 0 18px rgba(0, 245, 212, 0.45);
 }
 
 .lisbet-potato {
   font-size: 3.2rem;
   line-height: 1;
   margin: 0.35rem 0 0.15rem;
-  filter: drop-shadow(0 0 14px rgba(0, 245, 212, 0.55));
+  filter: drop-shadow(0 4px 12px rgba(230, 180, 34, 0.35));
 }
 
 div[data-testid="stForm"] {
-  background: #161B26;
+  background: #1E241C;
   padding: 1.15rem 1rem 0.7rem;
   border-radius: 16px;
-  border: 1px solid rgba(0, 245, 212, 0.28);
-  box-shadow: 0 0 20px rgba(0, 245, 212, 0.08);
+  border: 1px solid rgba(230, 180, 34, 0.28);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
-/* Botón primario turquesa */
 div[data-testid="stForm"] button[kind="primary"],
 button[kind="primary"] {
-  background: linear-gradient(90deg, #00F5D4, #00c9b0) !important;
-  color: #0B0F19 !important;
+  background: linear-gradient(90deg, #E6B422, #C99512) !important;
+  color: #121410 !important;
   border: none !important;
   font-weight: 700 !important;
-  box-shadow: 0 0 18px rgba(0, 245, 212, 0.4);
 }
 
 h1, h2, h3 {
-  font-family: Outfit, sans-serif !important;
-  color: #FFFFFF !important;
+  font-family: Literata, Georgia, serif !important;
+  color: #FAFAF7 !important;
 }
 
 p, label, .stMarkdown, [data-testid="stCaption"],
 [data-testid="stWidgetLabel"] p {
-  color: #FFFFFF !important;
+  color: #FAFAF7 !important;
 }
 
-[data-testid="stMetricValue"], [data-testid="stMetricLabel"] {
-  color: #FFFFFF !important;
+[data-testid="stMetricLabel"] {
+  color: #C5C9BE !important;
 }
 
 [data-testid="stMetricValue"] {
-  color: #00F5D4 !important;
+  color: #E6B422 !important;
 }
 
-/* Inputs */
 .stTextInput input, .stNumberInput input, .stSelectbox [data-baseweb="select"] > div {
-  background-color: #0B0F19 !important;
-  color: #FFFFFF !important;
-  border: 1px solid rgba(0, 245, 212, 0.35) !important;
+  background-color: #121410 !important;
+  color: #FAFAF7 !important;
+  border: 1px solid rgba(230, 180, 34, 0.32) !important;
   border-radius: 12px !important;
 }
 
 .stTextInput input:focus, .stNumberInput input:focus {
-  border-color: #00F5D4 !important;
-  box-shadow: 0 0 0 1px #00F5D4 !important;
+  border-color: #E6B422 !important;
+  box-shadow: 0 0 0 1px #E6B422 !important;
 }
 
 [data-testid="stAlert"] {
