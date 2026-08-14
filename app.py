@@ -630,8 +630,7 @@ if seccion == "Cuaderno Semanal":
                 )
                 precio_txt = st.text_input(
                     "Precio por kilo (S/)",
-                    value="2.60",
-                    placeholder="Ej: 2.60",
+                    placeholder="Escriba el precio, ej: 2.60",
                 )
                 estado = st.selectbox("Estado del pago", ESTADOS_PAGO)
                 guardar = st.form_submit_button("Guardar despacho")
