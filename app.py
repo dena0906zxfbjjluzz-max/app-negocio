@@ -744,31 +744,41 @@ if seccion == "Cuaderno Semanal":
                     key=f"sel_edit_{nombre_dia}_{semana_act}",
                 )
                 idx_edit = etiquetas[elegir_lbl]
+                actual = st.session_state.base_ventas[idx_edit]
+
+                def _txt_num(valor) -> str:
+                    if isinstance(valor, float):
+                        return str(valor).rstrip("0").rstrip(".")
+                    return str(valor)
 
                 with st.form(f"form_edit_{nombre_dia}_{idx_edit}"):
-                    st.caption("Cambie lo que esté mal y guarde, o bórrelo si no debió ir.")
+                    st.caption("Al marcar el despacho arriba, aquí se llenan solos. Corrija y guarde, o bórrelo.")
                     e_cliente = st.selectbox(
                         "Pollería",
                         LISTA_POLLERIAS,
-                        index=None,
-                        placeholder="Elija la pollería",
+                        index=(
+                            LISTA_POLLERIAS.index(actual["cliente"])
+                            if actual["cliente"] in LISTA_POLLERIAS
+                            else 0
+                        ),
                     )
                     e_kilos_txt = st.text_input(
                         "Kilos (kg)",
-                        value="",
-                        placeholder="Escriba los kilos",
+                        value=_txt_num(actual["kilos"]),
                         help="Escriba la cantidad de kilos que quiera.",
                     )
                     e_precio_txt = st.text_input(
                         "Precio por kilo (S/)",
-                        value="",
-                        placeholder="Escriba el precio",
+                        value=_txt_num(actual["precio"]),
                     )
                     e_estado = st.selectbox(
                         "Estado del pago",
                         ESTADOS_PAGO,
-                        index=None,
-                        placeholder="Elija cómo pagó",
+                        index=(
+                            ESTADOS_PAGO.index(actual["estado"])
+                            if actual["estado"] in ESTADOS_PAGO
+                            else 0
+                        ),
                     )
                     col_g, col_b = st.columns(2)
                     with col_g:
