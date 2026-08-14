@@ -1,4 +1,4 @@
-# Lisbeth · Papas y Pollerías
+# Liseth · Papas y Pollerías
 
 App Streamlit para despachos a pollerías, gastos, cobranza, gráficos y reportes Excel/PDF.
 
@@ -20,7 +20,7 @@ streamlit run app.py
 
 ```toml
 [credenciales]
-usuario = "lisbeth"
+usuario = "liseth"
 clave = "tu_clave"
 
 SUPABASE_URL = "https://xxxx.supabase.co"

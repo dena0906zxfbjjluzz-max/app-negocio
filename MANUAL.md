@@ -1,4 +1,4 @@
-# Manual de uso — Lisbeth · Papas y Pollerías
+# Manual de uso — Liseth · Papas y Pollerías
 
 Guía sencilla para el celular o la computadora.  
 *(Para quien anota los despachos y gastos del día a día.)*
@@ -196,4 +196,4 @@ Si algo no funciona o hay que cambiar la clave, avisa a quien instaló la app (S
 
 ---
 
-*Manual Lisbeth · Papas y Pollerías · uso diario en terreno.*
+*Manual Liseth · Papas y Pollerías · uso diario en terreno.*
