@@ -623,7 +623,12 @@ if seccion == "Cuaderno Semanal":
             st.subheader(f"Hoja del {nombre_dia}")
 
             with st.form(f"form_{nombre_dia}", clear_on_submit=True):
-                cliente = st.selectbox("Pollería", LISTA_POLLERIAS)
+                cliente = st.selectbox(
+                    "Pollería",
+                    LISTA_POLLERIAS,
+                    index=None,
+                    placeholder="Elija la pollería",
+                )
                 kilos_txt = st.text_input(
                     "Kilos (kg)",
                     placeholder="Escriba la cantidad que quiera, ej: 12 · 37.5 · 200",
@@ -642,7 +647,9 @@ if seccion == "Cuaderno Semanal":
                     except ValueError:
                         st.error("Escriba números válidos en kilos y precio (ej. 25.5 y 2.60).")
                         kilos = precio = None
-                    if kilos is not None and precio is not None:
+                    if not cliente:
+                        st.error("Elija la pollería.")
+                    elif kilos is not None and precio is not None:
                         if kilos <= 0:
                             st.error("Los kilos deben ser mayores que 0.")
                         elif precio < 0:
