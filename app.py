@@ -435,6 +435,25 @@ def monto_venta(v: dict) -> float:
     return float(v.get("kilos", 0)) * float(v.get("precio", 0))
 
 
+def despacho_ya_ingresado(venta: dict, excluir_idx: int | None = None) -> bool:
+    """True si ya hay el mismo cliente, kilos y precio ese día de esa semana."""
+    cliente = (venta.get("cliente") or "").strip().casefold()
+    kilos = round(float(venta.get("kilos") or 0), 4)
+    precio = round(float(venta.get("precio") or 0), 4)
+    for i, v in enumerate(st.session_state.get("base_ventas", [])):
+        if excluir_idx is not None and i == excluir_idx:
+            continue
+        if (
+            v.get("semana") == venta.get("semana")
+            and v.get("dia") == venta.get("dia")
+            and (v.get("cliente") or "").strip().casefold() == cliente
+            and round(float(v.get("kilos") or 0), 4) == kilos
+            and round(float(v.get("precio") or 0), 4) == precio
+        ):
+            return True
+    return False
+
+
 def datos_demo() -> list[dict]:
     return []
 
@@ -655,23 +674,28 @@ if seccion == "Cuaderno Semanal":
                         elif precio < 0:
                             st.error("El precio no puede ser negativo.")
                         else:
-                            try:
-                                agregar_venta(
-                                    {
-                                        "semana": semana_act,
-                                        "dia": nombre_dia,
-                                        "cliente": cliente,
-                                        "kilos": float(kilos),
-                                        "precio": float(precio),
-                                        "estado": estado,
-                                    }
+                            nueva = {
+                                "semana": semana_act,
+                                "dia": nombre_dia,
+                                "cliente": cliente,
+                                "kilos": float(kilos),
+                                "precio": float(precio),
+                                "estado": estado,
+                            }
+                            if despacho_ya_ingresado(nueva):
+                                st.warning(
+                                    "Ese despacho ya está anotado (misma pollería, kilos y precio). "
+                                    "No se volvió a guardar."
                                 )
-                                st.success(
-                                    f"Anotado: {cliente} · {kilos:g} kg · S/ {kilos * precio:.2f}"
-                                )
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"No se pudo guardar: {e}")
+                            else:
+                                try:
+                                    agregar_venta(nueva)
+                                    st.success(
+                                        f"Anotado: {cliente} · {kilos:g} kg · S/ {kilos * precio:.2f}"
+                                    )
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"No se pudo guardar: {e}")
 
             indices_dia = [
                 i
@@ -770,22 +794,26 @@ if seccion == "Cuaderno Semanal":
                             if e_kilos <= 0:
                                 st.error("Los kilos deben ser mayores que 0.")
                             else:
-                                try:
-                                    corregir_venta(
-                                        idx_edit,
-                                        {
-                                            "semana": semana_act,
-                                            "dia": nombre_dia,
-                                            "cliente": e_cliente,
-                                            "kilos": float(e_kilos),
-                                            "precio": float(e_precio),
-                                            "estado": e_estado,
-                                        },
+                                corregida = {
+                                    "semana": semana_act,
+                                    "dia": nombre_dia,
+                                    "cliente": e_cliente,
+                                    "kilos": float(e_kilos),
+                                    "precio": float(e_precio),
+                                    "estado": e_estado,
+                                }
+                                if despacho_ya_ingresado(corregida, excluir_idx=idx_edit):
+                                    st.warning(
+                                        "Ya hay otro despacho igual (misma pollería, kilos y precio). "
+                                        "No se guardó la corrección."
                                     )
-                                    st.success("Despacho corregido.")
-                                    st.rerun()
-                                except Exception as e:
-                                    st.error(f"No se pudo corregir: {e}")
+                                else:
+                                    try:
+                                        corregir_venta(idx_edit, corregida)
+                                        st.success("Despacho corregido.")
+                                        st.rerun()
+                                    except Exception as e:
+                                        st.error(f"No se pudo corregir: {e}")
                     if btn_borrar:
                         try:
                             eliminar_venta(idx_edit)
