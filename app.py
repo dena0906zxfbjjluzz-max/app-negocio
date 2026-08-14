@@ -657,7 +657,12 @@ if seccion == "Cuaderno Semanal":
                     "Precio por kilo (S/)",
                     placeholder="Escriba el precio, ej: 2.60",
                 )
-                estado = st.selectbox("Estado del pago", ESTADOS_PAGO)
+                estado = st.selectbox(
+                    "Estado del pago",
+                    ESTADOS_PAGO,
+                    index=None,
+                    placeholder="Elija cómo pagó",
+                )
                 guardar = st.form_submit_button("Guardar despacho")
                 if guardar:
                     try:
@@ -668,6 +673,8 @@ if seccion == "Cuaderno Semanal":
                         kilos = precio = None
                     if not cliente:
                         st.error("Elija la pollería.")
+                    elif not estado:
+                        st.error("Elija el estado del pago.")
                     elif kilos is not None and precio is not None:
                         if kilos <= 0:
                             st.error("Los kilos deben ser mayores que 0.")
@@ -737,38 +744,31 @@ if seccion == "Cuaderno Semanal":
                     key=f"sel_edit_{nombre_dia}_{semana_act}",
                 )
                 idx_edit = etiquetas[elegir_lbl]
-                actual = st.session_state.base_ventas[idx_edit]
 
                 with st.form(f"form_edit_{nombre_dia}_{idx_edit}"):
                     st.caption("Cambie lo que esté mal y guarde, o bórrelo si no debió ir.")
                     e_cliente = st.selectbox(
                         "Pollería",
                         LISTA_POLLERIAS,
-                        index=(
-                            LISTA_POLLERIAS.index(actual["cliente"])
-                            if actual["cliente"] in LISTA_POLLERIAS
-                            else 0
-                        ),
+                        index=None,
+                        placeholder="Elija la pollería",
                     )
                     e_kilos_txt = st.text_input(
                         "Kilos (kg)",
-                        value=str(actual["kilos"]).rstrip("0").rstrip(".")
-                        if isinstance(actual["kilos"], float)
-                        else str(actual["kilos"]),
+                        value="",
+                        placeholder="Escriba los kilos",
                         help="Escriba la cantidad de kilos que quiera.",
                     )
                     e_precio_txt = st.text_input(
                         "Precio por kilo (S/)",
-                        value=str(actual["precio"]),
+                        value="",
+                        placeholder="Escriba el precio",
                     )
                     e_estado = st.selectbox(
                         "Estado del pago",
                         ESTADOS_PAGO,
-                        index=(
-                            ESTADOS_PAGO.index(actual["estado"])
-                            if actual["estado"] in ESTADOS_PAGO
-                            else 0
-                        ),
+                        index=None,
+                        placeholder="Elija cómo pagó",
                     )
                     col_g, col_b = st.columns(2)
                     with col_g:
@@ -784,36 +784,41 @@ if seccion == "Cuaderno Semanal":
                         )
 
                     if btn_guardar:
-                        try:
-                            e_kilos = float((e_kilos_txt or "").replace(",", ".").strip())
-                            e_precio = float((e_precio_txt or "").replace(",", ".").strip())
-                        except ValueError:
-                            st.error("Kilos y precio deben ser números válidos.")
-                            e_kilos = e_precio = None
-                        if e_kilos is not None and e_precio is not None:
-                            if e_kilos <= 0:
-                                st.error("Los kilos deben ser mayores que 0.")
-                            else:
-                                corregida = {
-                                    "semana": semana_act,
-                                    "dia": nombre_dia,
-                                    "cliente": e_cliente,
-                                    "kilos": float(e_kilos),
-                                    "precio": float(e_precio),
-                                    "estado": e_estado,
-                                }
-                                if despacho_ya_ingresado(corregida, excluir_idx=idx_edit):
-                                    st.warning(
-                                        "Ya hay otro despacho igual (misma pollería, kilos y precio). "
-                                        "No se guardó la corrección."
-                                    )
+                        if not e_cliente:
+                            st.error("Elija la pollería.")
+                        elif not e_estado:
+                            st.error("Elija el estado del pago.")
+                        else:
+                            try:
+                                e_kilos = float((e_kilos_txt or "").replace(",", ".").strip())
+                                e_precio = float((e_precio_txt or "").replace(",", ".").strip())
+                            except ValueError:
+                                st.error("Kilos y precio deben ser números válidos.")
+                                e_kilos = e_precio = None
+                            if e_kilos is not None and e_precio is not None:
+                                if e_kilos <= 0:
+                                    st.error("Los kilos deben ser mayores que 0.")
                                 else:
-                                    try:
-                                        corregir_venta(idx_edit, corregida)
-                                        st.success("Despacho corregido.")
-                                        st.rerun()
-                                    except Exception as e:
-                                        st.error(f"No se pudo corregir: {e}")
+                                    corregida = {
+                                        "semana": semana_act,
+                                        "dia": nombre_dia,
+                                        "cliente": e_cliente,
+                                        "kilos": float(e_kilos),
+                                        "precio": float(e_precio),
+                                        "estado": e_estado,
+                                    }
+                                    if despacho_ya_ingresado(corregida, excluir_idx=idx_edit):
+                                        st.warning(
+                                            "Ya hay otro despacho igual (misma pollería, kilos y precio). "
+                                            "No se guardó la corrección."
+                                        )
+                                    else:
+                                        try:
+                                            corregir_venta(idx_edit, corregida)
+                                            st.success("Despacho corregido.")
+                                            st.rerun()
+                                        except Exception as e:
+                                            st.error(f"No se pudo corregir: {e}")
                     if btn_borrar:
                         try:
                             eliminar_venta(idx_edit)
