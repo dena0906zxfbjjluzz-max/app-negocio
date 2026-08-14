@@ -14,10 +14,6 @@ from db import (
     insertar_despacho,
     actualizar_despacho,
     borrar_despacho,
-    listar_gastos,
-    insertar_gasto,
-    actualizar_gasto,
-    borrar_gasto,
 )
 
 st.set_page_config(
@@ -391,15 +387,6 @@ LISTA_POLLERIAS = [
 ]
 
 ESTADOS_PAGO = ["Pagado en efectivo", "Transferencia", "Fiado / Debe"]
-CATEGORIAS_GASTO = [
-    "Compra de papas",
-    "Transporte",
-    "Personal / jornal",
-    "Combustible",
-    "Peaje",
-    "Empaque",
-    "Otro",
-]
 DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 TABS_DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 
@@ -422,10 +409,6 @@ def semanas_disponibles() -> list[str]:
     # semanas que ya existen en datos
     for v in st.session_state.get("base_ventas", []):
         s = v.get("semana")
-        if s and s not in out:
-            out.append(s)
-    for g in st.session_state.get("base_gastos", []):
-        s = g.get("semana")
         if s and s not in out:
             out.append(s)
     return out
@@ -458,10 +441,6 @@ def datos_demo() -> list[dict]:
     return []
 
 
-def datos_demo_gastos() -> list[dict]:
-    return []
-
-
 def cargar_datos_iniciales() -> list[dict]:
     if USAR_NUBE:
         try:
@@ -470,16 +449,6 @@ def cargar_datos_iniciales() -> list[dict]:
             st.session_state["error_supabase"] = str(e)
             return []
     return datos_demo()
-
-
-def cargar_gastos_iniciales() -> list[dict]:
-    if USAR_NUBE:
-        try:
-            return listar_gastos()
-        except Exception as e:
-            st.session_state["error_gastos"] = str(e)
-            return []
-    return datos_demo_gastos()
 
 
 def agregar_venta(venta: dict) -> None:
@@ -505,30 +474,6 @@ def eliminar_venta(idx: int) -> None:
     if USAR_NUBE and actual.get("id") is not None:
         borrar_despacho(int(actual["id"]))
     st.session_state.base_ventas.pop(idx)
-
-
-def agregar_gasto(gasto: dict) -> None:
-    if USAR_NUBE:
-        guardado = insertar_gasto(gasto)
-        st.session_state.base_gastos.append(guardado)
-    else:
-        st.session_state.base_gastos.append({**gasto, "id": None})
-
-
-def corregir_gasto(idx: int, gasto: dict) -> None:
-    actual = st.session_state.base_gastos[idx]
-    if USAR_NUBE and actual.get("id") is not None:
-        guardado = actualizar_gasto(int(actual["id"]), gasto)
-        st.session_state.base_gastos[idx] = guardado
-    else:
-        st.session_state.base_gastos[idx] = {**gasto, "id": actual.get("id")}
-
-
-def eliminar_gasto(idx: int) -> None:
-    actual = st.session_state.base_gastos[idx]
-    if USAR_NUBE and actual.get("id") is not None:
-        borrar_gasto(int(actual["id"]))
-    st.session_state.base_gastos.pop(idx)
 
 
 if "autenticado" not in st.session_state:
@@ -564,8 +509,6 @@ if not st.session_state.autenticado:
             st.session_state.usuario_sesion = usuario_in.strip()
             if "base_ventas" in st.session_state:
                 del st.session_state["base_ventas"]
-            if "base_gastos" in st.session_state:
-                del st.session_state["base_gastos"]
             st.rerun()
         else:
             st.error("Usuario o contraseña incorrectos.")
@@ -575,8 +518,6 @@ if not st.session_state.autenticado:
 # ---------- APP (requiere login) ----------
 if "base_ventas" not in st.session_state:
     st.session_state.base_ventas = cargar_datos_iniciales()
-if "base_gastos" not in st.session_state:
-    st.session_state.base_gastos = cargar_gastos_iniciales()
 
 st.sidebar.title(f"🥔 {NOMBRE_NEGOCIO}")
 st.sidebar.caption(f"Sesión: **{st.session_state.usuario_sesion or 'usuario'}**")
@@ -585,32 +526,22 @@ if st.sidebar.button("Cerrar sesión", use_container_width=True):
     st.session_state.usuario_sesion = ""
     if "base_ventas" in st.session_state:
         del st.session_state["base_ventas"]
-    if "base_gastos" in st.session_state:
-        del st.session_state["base_gastos"]
     st.rerun()
 
 if USAR_NUBE:
     if st.sidebar.button("Recargar desde la nube", use_container_width=True):
         try:
             st.session_state.base_ventas = listar_despachos()
-            try:
-                st.session_state.base_gastos = listar_gastos()
-                st.session_state.pop("error_gastos", None)
-            except Exception as eg:
-                st.session_state["error_gastos"] = str(eg)
-                st.session_state.base_gastos = []
             st.rerun()
         except Exception as e:
             st.sidebar.error(f"Error: {e}")
 
 if st.session_state.get("error_supabase"):
     st.sidebar.error(f"Supabase: {st.session_state['error_supabase']}")
-if st.session_state.get("error_gastos"):
-    st.sidebar.warning("Falta crear la tabla de gastos en Supabase.")
 
 seccion = st.sidebar.radio(
     "Ir a",
-    ["Cuaderno Semanal", "Gastos", "Resumen Semanal", "Cuentas por Cobrar"],
+    ["Cuaderno Semanal", "Resumen Semanal", "Cuentas por Cobrar"],
 )
 
 st.markdown(
@@ -840,167 +771,25 @@ if seccion == "Cuaderno Semanal":
                 st.info("Hoja vacía. Aún no hay despachos este día.")
 
 # =====================================================================
-# 1b) GASTOS
-# =====================================================================
-elif seccion == "Gastos":
-    st.header("Gastos del negocio")
-    st.caption("Compra de papas, transporte, personal u otros → utilidad neta en el resumen.")
-    if USAR_NUBE and st.session_state.get("error_gastos"):
-        st.error("No se pudo leer gastos. Ejecute el SQL de gastos en Supabase y recargue.")
-
-    semana_act = st.selectbox(
-        "Semana de gastos",
-        semanas_disponibles(),
-        key="semana_gastos",
-    )
-
-    with st.form("form_gasto", clear_on_submit=True):
-        c1, c2 = st.columns(2)
-        with c1:
-            g_dia = st.selectbox("Día", DIAS)
-            g_cat = st.selectbox("Categoría", CATEGORIAS_GASTO)
-        with c2:
-            g_monto_txt = st.text_input("Monto (S/)", placeholder="Ej: 150.00")
-            g_concepto = st.text_input("Concepto / nota", placeholder="Opcional")
-        guardar_g = st.form_submit_button("Guardar gasto", type="primary")
-        if guardar_g:
-            try:
-                g_monto = float((g_monto_txt or "").replace(",", ".").strip())
-            except ValueError:
-                st.error("Escriba un monto válido (ej. 80 o 150.50).")
-                g_monto = None
-            if g_monto is not None:
-                if g_monto <= 0:
-                    st.error("El monto debe ser mayor que 0.")
-                else:
-                    try:
-                        agregar_gasto(
-                            {
-                                "semana": semana_act,
-                                "dia": g_dia,
-                                "categoria": g_cat,
-                                "concepto": (g_concepto or "").strip(),
-                                "monto": float(g_monto),
-                            }
-                        )
-                        st.success(f"Gasto anotado: {g_cat} · S/ {g_monto:.2f}")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"No se pudo guardar: {e}")
-
-    indices_g = [
-        i
-        for i, g in enumerate(st.session_state.base_gastos)
-        if g["semana"] == semana_act
-    ]
-    if not indices_g:
-        st.info("Sin gastos en esta semana.")
-    else:
-        filas_g = [
-            {
-                "día": st.session_state.base_gastos[i]["dia"],
-                "categoría": st.session_state.base_gastos[i]["categoria"],
-                "concepto": st.session_state.base_gastos[i]["concepto"],
-                "monto": st.session_state.base_gastos[i]["monto"],
-            }
-            for i in indices_g
-        ]
-        df_g = pd.DataFrame(filas_g)
-        st.dataframe(df_g, use_container_width=True, hide_index=True)
-        st.metric("Total gastos semana", f"S/ {df_g['monto'].sum():.2f}")
-
-        st.divider()
-        st.subheader("Corregir o borrar gasto")
-        etiquetas_g = {
-            f"#{n + 1} · {st.session_state.base_gastos[i]['dia']} · "
-            f"{st.session_state.base_gastos[i]['categoria']} · "
-            f"S/ {st.session_state.base_gastos[i]['monto']:.2f}": i
-            for n, i in enumerate(indices_g)
-        }
-        elegir_g = st.selectbox("Gasto", list(etiquetas_g.keys()), key="sel_gasto_edit")
-        idx_g = etiquetas_g[elegir_g]
-        actual_g = st.session_state.base_gastos[idx_g]
-
-        with st.form("form_edit_gasto"):
-            eg_dia = st.selectbox(
-                "Día",
-                DIAS,
-                index=DIAS.index(actual_g["dia"]) if actual_g["dia"] in DIAS else 0,
-            )
-            eg_cat = st.selectbox(
-                "Categoría",
-                CATEGORIAS_GASTO,
-                index=(
-                    CATEGORIAS_GASTO.index(actual_g["categoria"])
-                    if actual_g["categoria"] in CATEGORIAS_GASTO
-                    else 0
-                ),
-            )
-            eg_monto_txt = st.text_input("Monto (S/)", value=str(actual_g["monto"]))
-            eg_concepto = st.text_input("Concepto", value=actual_g.get("concepto") or "")
-            col_sg, col_bg = st.columns(2)
-            with col_sg:
-                btn_sg = st.form_submit_button(
-                    "Guardar corrección", type="primary", use_container_width=True
-                )
-            with col_bg:
-                btn_bg = st.form_submit_button("Borrar gasto", use_container_width=True)
-
-            if btn_sg:
-                try:
-                    eg_monto = float((eg_monto_txt or "").replace(",", ".").strip())
-                except ValueError:
-                    st.error("Monto inválido.")
-                    eg_monto = None
-                if eg_monto is not None and eg_monto > 0:
-                    try:
-                        corregir_gasto(
-                            idx_g,
-                            {
-                                "semana": semana_act,
-                                "dia": eg_dia,
-                                "categoria": eg_cat,
-                                "concepto": (eg_concepto or "").strip(),
-                                "monto": float(eg_monto),
-                            },
-                        )
-                        st.success("Gasto corregido.")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"No se pudo corregir: {e}")
-            if btn_bg:
-                try:
-                    eliminar_gasto(idx_g)
-                    st.success("Gasto borrado.")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"No se pudo borrar: {e}")
-
-# =====================================================================
 # 2) RESUMEN SEMANAL
 # =====================================================================
 elif seccion == "Resumen Semanal":
     st.header("Cierre de la semana")
     semana_act = st.selectbox("Ver resumen de", semanas_disponibles())
     ventas_sem = [v for v in st.session_state.base_ventas if v["semana"] == semana_act]
-    gastos_sem = [g for g in st.session_state.base_gastos if g["semana"] == semana_act]
 
-    if not ventas_sem and not gastos_sem:
-        st.info("Aún no hay datos en esta semana.")
+    if not ventas_sem:
+        st.info("Aún no hay despachos en esta semana.")
     else:
         total_fact = sum(monto_venta(v) for v in ventas_sem)
-        total_gast = sum(float(g.get("monto", 0)) for g in gastos_sem)
-        utilidad = total_fact - total_gast
 
         st.subheader("Totales")
-        m1, m2, m3, m4 = st.columns(4)
+        m1, m2 = st.columns(2)
         m1.metric(
             "Kilos",
             f"{sum(float(v.get('kilos', 0)) for v in ventas_sem):.1f}",
         )
         m2.metric("Facturación", f"S/ {total_fact:.2f}")
-        m3.metric("Gastos", f"S/ {total_gast:.2f}")
-        m4.metric("Utilidad neta", f"S/ {utilidad:.2f}")
 
         if ventas_sem:
             df_sem = pd.DataFrame(ventas_sem)
@@ -1037,52 +826,26 @@ elif seccion == "Resumen Semanal":
                 use_container_width=True,
                 hide_index=True,
             )
-        else:
-            st.info("Sin despachos esta semana (solo gastos).")
-
-        if gastos_sem:
-            df_gs = pd.DataFrame(gastos_sem)
-            st.subheader("Gastos de la semana")
-            por_cat = (
-                df_gs.groupby("categoria", as_index=True)["monto"]
-                .sum()
-                .sort_values(ascending=False)
-            )
-            st.caption("Gastos por categoría (S/)")
-            st.bar_chart(por_cat, use_container_width=True)
-            st.dataframe(
-                df_gs[["dia", "categoria", "concepto", "monto"]],
-                use_container_width=True,
-                hide_index=True,
-            )
 
         # Comparativa entre semanas con datos
         st.divider()
         st.subheader("Comparativa entre semanas")
         filas_comp = []
         semanas_vistas = sorted(
-            {
-                *(v["semana"] for v in st.session_state.base_ventas),
-                *(g["semana"] for g in st.session_state.base_gastos),
-            },
+            {v["semana"] for v in st.session_state.base_ventas},
             key=lambda s: int("".join(ch for ch in s if ch.isdigit()) or "0"),
         )
         for s in semanas_vistas:
             v_s = [v for v in st.session_state.base_ventas if v["semana"] == s]
-            g_s = [g for g in st.session_state.base_gastos if g["semana"] == s]
-            fact = sum(monto_venta(v) for v in v_s)
-            gast = sum(float(g.get("monto", 0)) for g in g_s)
             filas_comp.append(
                 {
                     "semana": s,
-                    "Facturación": fact,
-                    "Gastos": gast,
-                    "Utilidad": fact - gast,
+                    "Facturación": sum(monto_venta(v) for v in v_s),
                 }
             )
         if len(filas_comp) >= 1:
             df_comp = pd.DataFrame(filas_comp).set_index("semana")
-            st.line_chart(df_comp[["Facturación", "Gastos", "Utilidad"]], use_container_width=True)
+            st.line_chart(df_comp[["Facturación"]], use_container_width=True)
 
         if ventas_sem:
             st.subheader("Descargar reportes")
