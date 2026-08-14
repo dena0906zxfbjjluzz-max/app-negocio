@@ -387,6 +387,7 @@ LISTA_POLLERIAS = [
     "Pollería Gisela",
     "Pollería Verónica",
     "Pollería Chike burger",
+    "Pollería Totus",
 ]
 
 ESTADOS_PAGO = ["Pagado en efectivo", "Transferencia", "Fiado / Debe"]
