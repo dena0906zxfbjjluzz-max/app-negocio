@@ -27,10 +27,6 @@ ESLOGAN = "Control de papas y pollerías · del cuaderno a la nube"
 LOGIN_BG = Path(__file__).resolve().parent / "assets" / "login_papas.jpg"
 APP_BG = Path(__file__).resolve().parent / "assets" / "app_papas_fritas.jpg"
 
-# Demo local si aún no hay secrets (cámbialo en Streamlit Cloud)
-USUARIO_DEMO = "admin"
-CLAVE_DEMO = "papas2026"
-
 
 def _imagen_base64(ruta: Path) -> str | None:
     if not ruta.is_file():
@@ -318,8 +314,8 @@ aplicar_estilo_negocio()
 
 
 
-def cargar_credenciales() -> tuple[str, str]:
-    """Lee usuario/clave desde st.secrets['credenciales']."""
+def cargar_credenciales() -> tuple[str, str] | None:
+    """Lee usuario/clave desde st.secrets. Sin secrets no hay entrada."""
     try:
         creds = st.secrets.get("credenciales")
         if creds is not None:
@@ -333,7 +329,7 @@ def cargar_credenciales() -> tuple[str, str]:
             return usuario, clave
     except Exception:
         pass
-    return USUARIO_DEMO, CLAVE_DEMO
+    return None
 
 
 USAR_NUBE = supabase_configurado()
@@ -479,7 +475,11 @@ if not st.session_state.autenticado:
         unsafe_allow_html=True,
     )
 
-    usuario_ok, clave_ok = cargar_credenciales()
+    creds = cargar_credenciales()
+    if not creds:
+        st.error("Falta configurar usuario y clave en Streamlit (Settings → Secrets).")
+        st.stop()
+    usuario_ok, clave_ok = creds
 
     with st.form("login_form"):
         usuario_in = st.text_input("Usuario")
