@@ -1,7 +1,7 @@
 # Manual de uso — Liseth · Papas y Pollerías
 
 Guía sencilla para el celular o la computadora.  
-*(Para quien anota los despachos y gastos del día a día.)*
+*(Para quien anota los despachos del día a día.)*
 
 ---
 
@@ -11,11 +11,9 @@ Es el **cuaderno digital** del negocio. Sirve para:
 
 1. Anotar **cuántos kilos** salieron cada día y a qué pollería  
 2. Registrar si pagaron **efectivo**, **transferencia** o si **deben (fiado)**  
-3. Anotar **gastos** (compra de papas, transporte, personal, etc.)  
-4. Ver **facturación, gastos y utilidad neta** de la semana  
-5. Ver **gráficos** (quién compra más, ventas por día, gastos)  
-6. Ver **quién debe plata** y marcar cobros  
-7. Descargar **Excel** y **PDF** del resumen  
+3. Ver **totales y gráficos** de la semana  
+4. Ver **quién debe plata** y marcar cobros  
+5. Descargar **Excel** y **PDF** del resumen  
 
 Con la nube conectada, **los datos no se pierden** al cerrar la página.
 
@@ -40,13 +38,12 @@ En el menú de la izquierda (en el celular: ícono de menú arriba a la izquierd
 
 ---
 
-## El menú (4 partes)
+## El menú (3 partes)
 
 | Opción | Para qué |
 |--------|----------|
 | **Cuaderno Semanal** | Anotar cada despacho del día |
-| **Gastos** | Compra de papas, flete, personal u otros |
-| **Resumen Semanal** | Totales, utilidad, gráficos, Excel y PDF |
+| **Resumen Semanal** | Totales, gráficos, Excel y PDF |
 | **Cuentas por Cobrar** | Pollerías que **deben** |
 
 Si hay nube, también verás **Recargar desde la nube** (por si algo no aparece al instante).
@@ -73,11 +70,13 @@ Si hay nube, también verás **Recargar desde la nube** (por si algo no aparece 
 
 Abajo verás la tabla del día y los totales (**Kilos hoy** y **Total hoy**).
 
+Si ese mismo día ya está la misma pollería con los mismos kilos y el mismo precio, **no se vuelve a guardar**.
+
 ### Si anotaste mal
 
 En **Corregir o borrar**:
 
-1. Elige el despacho.  
+1. Elige el despacho (los datos se llenan solos).  
 2. Cambia lo que esté mal → **Guardar corrección**  
    **o** → **Borrar despacho**.
 
@@ -89,28 +88,7 @@ En **Corregir o borrar**:
 
 ---
 
-## 2) Gastos — lo que inviertes
-
-Para saber la **utilidad real** (ventas − gastos).
-
-1. Entra a **Gastos**.  
-2. Elige la **semana**.  
-3. Completa:
-
-   | Campo | Ejemplo |
-   |-------|---------|
-   | **Día** | Lunes |
-   | **Categoría** | Compra de papas, Transporte, Personal… |
-   | **Monto (S/)** | 150.00 |
-   | **Concepto** | Nota opcional (ej. “mayorista”) |
-
-4. Toca **Guardar gasto**.
-
-También puedes **corregir o borrar** un gasto igual que en el cuaderno.
-
----
-
-## 3) Resumen Semanal — cierre
+## 2) Resumen Semanal — cierre
 
 1. Entra a **Resumen Semanal**.  
 2. Elige la semana.
@@ -119,17 +97,16 @@ Verás:
 
 | Bloque | Qué muestra |
 |--------|-------------|
-| **Totales** | Kilos, facturación, gastos, **utilidad neta** |
+| **Totales** | Kilos y facturación |
 | **Clientes sin pedido** | Pollerías a las que aún no despachaste |
-| **Gráficos** | Por pollería, por día, gastos por categoría, semanas |
-| **Tablas** | Detalle de ventas y gastos |
+| **Gráficos** | Por pollería, por día y entre semanas |
 | **Descargas** | Excel del cuaderno y PDF resumen |
 
 En el celular el archivo se abre con Excel, Drive o el lector de PDF.
 
 ---
 
-## 4) Cuentas por Cobrar — quién debe
+## 3) Cuentas por Cobrar — quién debe
 
 1. Entra a **Cuentas por Cobrar**.  
 2. Si nadie debe → **todo cobrado**.  
@@ -147,7 +124,7 @@ Esa entrega **sale de la lista de deudas**.
 
 | Situación | Qué pasa |
 |-----------|----------|
-| Nube conectada (Supabase en secrets) | **No se pierden.** |
+| Nube conectada | **No se pierden.** |
 | Sin nube | Solo en esa sesión; se pueden perder al cerrar. |
 
 Si algo no carga: **Recargar desde la nube**.
@@ -169,8 +146,7 @@ Si algo no carga: **Recargar desde la nube**.
 |----------|-----------|
 | No entra el usuario | Revisa mayúsculas y clave. |
 | Guardé y no aparece | Espera un momento o **Recargar desde la nube**. |
-| Error en Gastos / falta tabla | Quien instaló debe ejecutar el SQL de gastos en Supabase. |
-| Falta una pollería en la lista | Pedirle al dueño que la agregue en el sistema. |
+| Falta una pollería en la lista | Pedirle a quien instaló la app que la agregue. |
 | No baja el Excel | Probar en computadora o revisar permisos de descarga. |
 | Página en blanco | Refrescar. Si sigue, avisar con captura. |
 
@@ -181,18 +157,17 @@ Si algo no carga: **Recargar desde la nube**.
 ```
 1. Entra con usuario y contraseña
 2. Cuaderno → semana → día → pollería + kilos + precio + pago → Guardar
-3. Gastos → anota compra / flete / personal
-4. Si te equivocaste → Corregir o borrar
-5. Resumen → utilidad, gráficos, Excel o PDF
-6. Deudas → Cuentas por Cobrar → Registrar cobro
-7. Cerrar sesión al terminar
+3. Si te equivocaste → Corregir o borrar
+4. Resumen → totales, gráficos, Excel o PDF
+5. Deudas → Cuentas por Cobrar → Registrar cobro
+6. Cerrar sesión al terminar
 ```
 
 ---
 
 ## Contacto
 
-Si algo no funciona o hay que cambiar la clave, avisa a quien instaló la app (Streamlit / Supabase).
+Si algo no funciona o hay que cambiar la clave, avisa a quien instaló la app.
 
 ---
 

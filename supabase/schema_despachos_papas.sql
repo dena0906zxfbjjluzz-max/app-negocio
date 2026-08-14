@@ -1,8 +1,5 @@
--- ============================================================
 -- Control de Papas y Pollerías — tabla de despachos
 -- Pegar en Supabase → SQL Editor → Run
--- Proyecto: puede ser el mismo trazabilidad-prod u otro nuevo
--- ============================================================
 
 CREATE TABLE IF NOT EXISTS public.despachos_papas (
     id              BIGSERIAL PRIMARY KEY,

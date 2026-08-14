@@ -1,6 +1,6 @@
 # Liseth · Papas y Pollerías
 
-App Streamlit para despachos a pollerías, gastos, cobranza, gráficos y reportes Excel/PDF.
+App Streamlit para despachos a pollerías, cobranza, gráficos y reportes Excel/PDF.
 
 **Manual de uso:** [MANUAL.md](MANUAL.md)
 
@@ -27,7 +27,4 @@ SUPABASE_URL = "https://xxxx.supabase.co"
 SUPABASE_KEY = "tu-clave"
 ```
 
-3. En Supabase → SQL Editor, ejecutar en este orden:
-   - `supabase/schema_despachos_papas.sql`
-   - `supabase/schema_gastos_negocio.sql`
-   - (si la tabla vieja tenía `sacos`) `supabase/migrar_sacos_a_kilos.sql`
+3. En Supabase → SQL Editor, ejecutar `supabase/schema_despachos_papas.sql`.

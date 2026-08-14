@@ -59,7 +59,7 @@ def aplicar_estilo_login_fondo() -> None:
   background: transparent !important;
 }}
 
-/* Empuja Lisbet + formulario hacia la derecha (hueco de la foto) */
+/* Empuja el login hacia la derecha (hueco de la foto) */
 div.block-container {{
   max-width: 26rem !important;
   margin-left: auto !important;
@@ -244,19 +244,6 @@ html, body, [data-testid="stAppViewContainer"] {{
   color: #C5C9BE;
 }}
 
-.lisbet-chip {{
-  display: inline-block;
-  margin-top: 0.9rem;
-  padding: 0.32rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #121410;
-  background: #E6B422;
-  font-weight: 700;
-}}
-
 .lisbet-potato {{
   font-size: 3.2rem;
   line-height: 1;
@@ -331,7 +318,7 @@ aplicar_estilo_negocio()
 
 
 
-def cargar_credenciales() -> tuple[str, str, bool]:
+def cargar_credenciales() -> tuple[str, str]:
     """Lee usuario/clave desde st.secrets['credenciales']."""
     try:
         creds = st.secrets.get("credenciales")
@@ -339,14 +326,14 @@ def cargar_credenciales() -> tuple[str, str, bool]:
             usuario = str(creds.get("usuario", "")).strip()
             clave = str(creds.get("clave", "")).strip()
             if usuario and clave:
-                return usuario, clave, False
+                return usuario, clave
         usuario = str(st.secrets.get("usuario", "")).strip()
         clave = str(st.secrets.get("clave", "")).strip()
         if usuario and clave:
-            return usuario, clave, False
+            return usuario, clave
     except Exception:
         pass
-    return USUARIO_DEMO, CLAVE_DEMO, True
+    return USUARIO_DEMO, CLAVE_DEMO
 
 
 USAR_NUBE = supabase_configurado()
@@ -437,10 +424,6 @@ def despacho_ya_ingresado(venta: dict, excluir_idx: int | None = None) -> bool:
     return False
 
 
-def datos_demo() -> list[dict]:
-    return []
-
-
 def cargar_datos_iniciales() -> list[dict]:
     if USAR_NUBE:
         try:
@@ -448,7 +431,7 @@ def cargar_datos_iniciales() -> list[dict]:
         except Exception as e:
             st.session_state["error_supabase"] = str(e)
             return []
-    return datos_demo()
+    return []
 
 
 def agregar_venta(venta: dict) -> None:
@@ -496,7 +479,7 @@ if not st.session_state.autenticado:
         unsafe_allow_html=True,
     )
 
-    usuario_ok, clave_ok, _es_demo = cargar_credenciales()
+    usuario_ok, clave_ok = cargar_credenciales()
 
     with st.form("login_form"):
         usuario_in = st.text_input("Usuario")
@@ -582,7 +565,7 @@ if seccion == "Cuaderno Semanal":
                 kilos_txt = st.text_input(
                     "Kilos (kg)",
                     placeholder="Escriba la cantidad que quiera, ej: 12 · 37.5 · 200",
-                    help="Libre: los kilos reales del despacho (sin conversión a saco).",
+                    help="Kilos reales del despacho.",
                 )
                 precio_txt = st.text_input(
                     "Precio por kilo (S/)",
@@ -791,41 +774,40 @@ elif seccion == "Resumen Semanal":
         )
         m2.metric("Facturación", f"S/ {total_fact:.2f}")
 
-        if ventas_sem:
-            df_sem = pd.DataFrame(ventas_sem)
-            df_sem["monto"] = df_sem["kilos"] * df_sem["precio"]
+        df_sem = pd.DataFrame(ventas_sem)
+        df_sem["monto"] = df_sem["kilos"] * df_sem["precio"]
 
-            st.subheader("Clientes sin pedido esta semana")
-            con_pedido = set(df_sem["cliente"].unique())
-            faltantes = [c for c in LISTA_POLLERIAS if c not in con_pedido]
-            if faltantes:
-                st.warning(f"Falta despachar a {len(faltantes)} pollería(s):")
-                for c in faltantes:
-                    st.write(f"- {c}")
-            else:
-                st.success("Ya hay despacho a todas las pollerías de la lista.")
+        st.subheader("Clientes sin pedido esta semana")
+        con_pedido = set(df_sem["cliente"].unique())
+        faltantes = [c for c in LISTA_POLLERIAS if c not in con_pedido]
+        if faltantes:
+            st.warning(f"Falta despachar a {len(faltantes)} pollería(s):")
+            for c in faltantes:
+                st.write(f"- {c}")
+        else:
+            st.success("Ya hay despacho a todas las pollerías de la lista.")
 
-            st.divider()
-            st.subheader("Gráficos")
-            por_cliente = (
-                df_sem.groupby("cliente", as_index=True)[["monto", "kilos"]]
-                .sum()
-                .sort_values("monto", ascending=False)
-            )
-            st.caption("Facturación por pollería (S/)")
-            st.bar_chart(por_cliente["monto"], use_container_width=True)
+        st.divider()
+        st.subheader("Gráficos")
+        por_cliente = (
+            df_sem.groupby("cliente", as_index=True)[["monto", "kilos"]]
+            .sum()
+            .sort_values("monto", ascending=False)
+        )
+        st.caption("Facturación por pollería (S/)")
+        st.bar_chart(por_cliente["monto"], use_container_width=True)
 
-            orden_dias = {d: i for i, d in enumerate(DIAS)}
-            dias_orden = sorted(set(df_sem["dia"]), key=lambda d: orden_dias.get(d, 99))
-            por_dia = df_sem.groupby("dia")["monto"].sum().reindex(dias_orden)
-            st.caption("Ventas por día (S/)")
-            st.bar_chart(por_dia, use_container_width=True)
+        orden_dias = {d: i for i, d in enumerate(DIAS)}
+        dias_orden = sorted(set(df_sem["dia"]), key=lambda d: orden_dias.get(d, 99))
+        por_dia = df_sem.groupby("dia")["monto"].sum().reindex(dias_orden)
+        st.caption("Ventas por día (S/)")
+        st.bar_chart(por_dia, use_container_width=True)
 
-            st.dataframe(
-                df_sem[["dia", "cliente", "kilos", "precio", "monto", "estado"]],
-                use_container_width=True,
-                hide_index=True,
-            )
+        st.dataframe(
+            df_sem[["dia", "cliente", "kilos", "precio", "monto", "estado"]],
+            use_container_width=True,
+            hide_index=True,
+        )
 
         # Comparativa entre semanas con datos
         st.divider()
