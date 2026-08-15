@@ -62,12 +62,19 @@ def _fila_a_venta(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _payload(venta: dict[str, Any]) -> dict[str, Any]:
+def _es_error_columna(exc: BaseException) -> bool:
+    txt = str(exc).lower()
+    return "pgrst204" in txt or "could not find" in txt
+
+
+def _payload(venta: dict[str, Any], col_cantidad: str) -> dict[str, Any]:
+    qty = float(venta["kilos"])
+    cantidad: int | float = int(round(qty)) if col_cantidad == "sacos" else qty
     return {
         "semana": venta["semana"],
         "dia": venta["dia"],
         "cliente": venta["cliente"],
-        "kilos": float(venta["kilos"]),
+        col_cantidad: cantidad,
         "precio": float(venta["precio"]),
         "estado": venta["estado"],
     }
@@ -88,20 +95,39 @@ def insertar_despacho(venta: dict[str, Any]) -> dict[str, Any]:
     client = get_client()
     if client is None:
         raise RuntimeError("Supabase no configurado")
-    resp = client.table(TABLA).insert(_payload(venta)).execute()
-    if not resp.data:
-        raise RuntimeError("Insert vacío en Supabase")
-    return _fila_a_venta(resp.data[0])
+    ultimo: BaseException | None = None
+    for col in ("kilos", "sacos"):
+        try:
+            resp = client.table(TABLA).insert(_payload(venta, col)).execute()
+            if resp.data:
+                return _fila_a_venta(resp.data[0])
+        except Exception as e:
+            ultimo = e
+            if not _es_error_columna(e):
+                raise
+    raise RuntimeError(ultimo or "Insert vacío en Supabase")
 
 
 def actualizar_despacho(id_: int, venta: dict[str, Any]) -> dict[str, Any]:
     client = get_client()
     if client is None:
         raise RuntimeError("Supabase no configurado")
-    resp = client.table(TABLA).update(_payload(venta)).eq("id", id_).execute()
-    if not resp.data:
-        raise RuntimeError(f"No se actualizó id={id_}")
-    return _fila_a_venta(resp.data[0])
+    ultimo: BaseException | None = None
+    for col in ("kilos", "sacos"):
+        try:
+            resp = (
+                client.table(TABLA)
+                .update(_payload(venta, col))
+                .eq("id", id_)
+                .execute()
+            )
+            if resp.data:
+                return _fila_a_venta(resp.data[0])
+        except Exception as e:
+            ultimo = e
+            if not _es_error_columna(e):
+                raise
+    raise RuntimeError(ultimo or f"No se actualizó id={id_}")
 
 
 def borrar_despacho(id_: int) -> None:
