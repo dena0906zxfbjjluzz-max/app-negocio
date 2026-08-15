@@ -2,14 +2,15 @@ import pandas as pd
 import streamlit as st
 
 from logica import corregir_venta, monto_venta
+from db import mensaje_nube
 
 
 def mostrar_cobranza() -> None:
     st.header("Panel de cobranza")
     pendientes_idx = [
         i
-        for i, v in enumerate(st.session_state.base_ventas)
-        if v["estado"] == "Fiado / Debe"
+        for i, v in enumerate(st.session_state.get("base_ventas") or [])
+        if v.get("estado") == "Fiado / Debe"
     ]
 
     if not pendientes_idx:
@@ -50,11 +51,16 @@ def mostrar_cobranza() -> None:
     )
     if st.button("Registrar cobro"):
         idx = opciones[elegir]
-        v = dict(st.session_state.base_ventas[idx])
+        ventas = st.session_state.get("base_ventas") or []
+        if idx < 0 or idx >= len(ventas):
+            st.error("Ese despacho ya no está. Recargue e intente de nuevo.")
+            return
+        v = dict(ventas[idx])
         v["estado"] = modo
         try:
-            corregir_venta(idx, v)
+            with st.spinner("Guardando..."):
+                corregir_venta(idx, v)
             st.success("Cobro registrado.")
             st.rerun()
         except Exception as e:
-            st.error(f"No se pudo registrar cobro: {e}")
+            st.error(mensaje_nube(e))

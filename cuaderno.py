@@ -11,6 +11,7 @@ from logica import (
     semanas_disponibles,
     texto_numero,
 )
+from db import mensaje_nube
 
 
 def mostrar_cuaderno() -> None:
@@ -83,18 +84,19 @@ def mostrar_cuaderno() -> None:
                                 )
                             else:
                                 try:
-                                    agregar_venta(nueva)
+                                    with st.spinner("Guardando..."):
+                                        agregar_venta(nueva)
                                     st.success(
                                         f"Anotado: {cliente} · {kilos:g} kg · S/ {kilos * precio:.2f}"
                                     )
                                     st.rerun()
                                 except Exception as e:
-                                    st.error(f"No se pudo guardar: {e}")
+                                    st.error(mensaje_nube(e))
 
             indices_dia = [
                 i
-                for i, v in enumerate(st.session_state.base_ventas)
-                if v["semana"] == semana_act and v["dia"] == nombre_dia
+                for i, v in enumerate(st.session_state.get("base_ventas") or [])
+                if v.get("semana") == semana_act and v.get("dia") == nombre_dia
             ]
 
             if not indices_dia:
@@ -134,7 +136,11 @@ def mostrar_cuaderno() -> None:
                 key=f"sel_edit_{nombre_dia}_{semana_act}",
             )
             idx_edit = etiquetas[elegir_lbl]
-            actual = st.session_state.base_ventas[idx_edit]
+            ventas = st.session_state.get("base_ventas") or []
+            if idx_edit < 0 or idx_edit >= len(ventas):
+                st.warning("Ese despacho ya no está. Recargue la página.")
+                continue
+            actual = ventas[idx_edit]
 
             with st.form(f"form_edit_{nombre_dia}_{idx_edit}"):
                 st.caption("Al marcar el despacho arriba, aquí se llenan solos. Corrija y guarde, o bórrelo.")
@@ -209,15 +215,17 @@ def mostrar_cuaderno() -> None:
                                     )
                                 else:
                                     try:
-                                        corregir_venta(idx_edit, corregida)
+                                        with st.spinner("Guardando..."):
+                                            corregir_venta(idx_edit, corregida)
                                         st.success("Despacho corregido.")
                                         st.rerun()
                                     except Exception as e:
-                                        st.error(f"No se pudo corregir: {e}")
+                                        st.error(mensaje_nube(e))
                 if btn_borrar:
                     try:
-                        eliminar_venta(idx_edit)
+                        with st.spinner("Borrando..."):
+                            eliminar_venta(idx_edit)
                         st.success("Despacho borrado.")
                         st.rerun()
                     except Exception as e:
-                        st.error(f"No se pudo borrar: {e}")
+                        st.error(mensaje_nube(e))

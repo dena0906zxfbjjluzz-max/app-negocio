@@ -9,7 +9,11 @@ from reportes import generar_excel_cuaderno, generar_pdf_resumen
 def mostrar_resumen() -> None:
     st.header("Cierre de la semana")
     semana_act = st.selectbox("Ver resumen de", semanas_disponibles())
-    ventas_sem = [v for v in st.session_state.base_ventas if v["semana"] == semana_act]
+    ventas_sem = [
+        v
+        for v in (st.session_state.get("base_ventas") or [])
+        if v.get("semana") == semana_act
+    ]
 
     if not ventas_sem:
         st.info("Aún no hay despachos en esta semana.")
@@ -26,7 +30,9 @@ def mostrar_resumen() -> None:
     m2.metric("Facturación", f"S/ {total_fact:.2f}")
 
     df_sem = pd.DataFrame(ventas_sem)
-    df_sem["monto"] = df_sem["kilos"] * df_sem["precio"]
+    df_sem["monto"] = [
+        monto_venta(v) for v in ventas_sem
+    ]
 
     st.subheader("Clientes sin pedido esta semana")
     con_pedido = set(df_sem["cliente"].unique())
@@ -64,11 +70,15 @@ def mostrar_resumen() -> None:
     st.subheader("Comparativa entre semanas")
     filas_comp = []
     semanas_vistas = sorted(
-        {v["semana"] for v in st.session_state.base_ventas},
+        {v.get("semana") for v in (st.session_state.get("base_ventas") or []) if v.get("semana")},
         key=lambda s: int("".join(ch for ch in s if ch.isdigit()) or "0"),
     )
     for s in semanas_vistas:
-        v_s = [v for v in st.session_state.base_ventas if v["semana"] == s]
+        v_s = [
+            v
+            for v in (st.session_state.get("base_ventas") or [])
+            if v.get("semana") == s
+        ]
         filas_comp.append(
             {
                 "semana": s,
@@ -95,7 +105,7 @@ def mostrar_resumen() -> None:
             lista_clientes=LISTA_POLLERIAS,
         )
     except Exception as e:
-        st.error(f"No se pudo generar el reporte: {e}")
+        st.error("No se pudo armar el Excel o el PDF. Intente de nuevo.")
         return
 
     c1, c2 = st.columns(2)

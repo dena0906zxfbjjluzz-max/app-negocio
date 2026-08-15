@@ -9,6 +9,7 @@ from db import (
     borrar_despacho,
     insertar_despacho,
     listar_despachos,
+    mensaje_nube,
     supabase_configurado,
 )
 
@@ -85,14 +86,20 @@ def despacho_ya_ingresado(venta: dict, excluir_idx: int | None = None) -> bool:
 def cargar_datos_iniciales() -> list[dict]:
     if USAR_NUBE:
         try:
-            return listar_despachos()
+            datos = listar_despachos()
+            st.session_state.pop("error_supabase", None)
+            return datos if isinstance(datos, list) else []
         except Exception as e:
-            st.session_state["error_supabase"] = str(e)
+            st.session_state["error_supabase"] = mensaje_nube(e)
             return []
     return []
 
 
 def agregar_venta(venta: dict) -> None:
+    if "base_ventas" not in st.session_state or not isinstance(
+        st.session_state.base_ventas, list
+    ):
+        st.session_state.base_ventas = []
     if USAR_NUBE:
         guardada = insertar_despacho(venta)
         st.session_state.base_ventas.append(guardada)
@@ -101,7 +108,10 @@ def agregar_venta(venta: dict) -> None:
 
 
 def corregir_venta(idx: int, venta: dict) -> None:
-    actual = st.session_state.base_ventas[idx]
+    ventas = st.session_state.get("base_ventas") or []
+    if idx < 0 or idx >= len(ventas):
+        raise RuntimeError("Ese despacho ya no está. Recargue e intente de nuevo.")
+    actual = ventas[idx]
     if USAR_NUBE and actual.get("id") is not None:
         st.session_state.base_ventas[idx] = actualizar_despacho(int(actual["id"]), venta)
     else:
@@ -109,7 +119,10 @@ def corregir_venta(idx: int, venta: dict) -> None:
 
 
 def eliminar_venta(idx: int) -> None:
-    actual = st.session_state.base_ventas[idx]
+    ventas = st.session_state.get("base_ventas") or []
+    if idx < 0 or idx >= len(ventas):
+        raise RuntimeError("Ese despacho ya no está. Recargue e intente de nuevo.")
+    actual = ventas[idx]
     if USAR_NUBE and actual.get("id") is not None:
         borrar_despacho(int(actual["id"]))
     st.session_state.base_ventas.pop(idx)

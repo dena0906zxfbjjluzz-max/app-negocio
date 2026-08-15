@@ -11,7 +11,7 @@ st.set_page_config(
 from cobranza import mostrar_cobranza
 from config import ESLOGAN, NOMBRE_NEGOCIO, SECCIONES
 from cuaderno import mostrar_cuaderno
-from db import listar_despachos
+from db import listar_despachos, mensaje_nube
 from estilo import aplicar_estilo_login_fondo, aplicar_estilo_negocio
 from logica import USAR_NUBE, cargar_credenciales, cargar_datos_iniciales
 from resumen import mostrar_resumen
@@ -60,7 +60,9 @@ if not st.session_state.autenticado:
 
     st.stop()
 
-if "base_ventas" not in st.session_state:
+if "base_ventas" not in st.session_state or not isinstance(
+    st.session_state.base_ventas, list
+):
     st.session_state.base_ventas = cargar_datos_iniciales()
 
 st.sidebar.title(f"🥔 {NOMBRE_NEGOCIO}")
@@ -75,10 +77,12 @@ if st.sidebar.button("Cerrar sesión", use_container_width=True):
 if USAR_NUBE:
     if st.sidebar.button("Recargar desde la nube", use_container_width=True):
         try:
-            st.session_state.base_ventas = listar_despachos()
+            with st.spinner("Cargando..."):
+                st.session_state.base_ventas = listar_despachos()
+            st.session_state.pop("error_supabase", None)
             st.rerun()
         except Exception as e:
-            st.sidebar.error(f"Error: {e}")
+            st.sidebar.error(mensaje_nube(e))
 
 if st.session_state.get("error_supabase"):
     st.sidebar.error(f"Supabase: {st.session_state['error_supabase']}")
@@ -95,9 +99,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-if seccion == "Cuaderno Semanal":
-    mostrar_cuaderno()
-elif seccion == "Resumen Semanal":
-    mostrar_resumen()
-else:
-    mostrar_cobranza()
+try:
+    if seccion == "Cuaderno Semanal":
+        mostrar_cuaderno()
+    elif seccion == "Resumen Semanal":
+        mostrar_resumen()
+    else:
+        mostrar_cobranza()
+except Exception as e:
+    st.error(mensaje_nube(e))
+    st.caption("Si sigue igual, recargue la página o toque Recargar desde la nube.")
